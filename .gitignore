@@ -1,0 +1,51 @@
+# Build artifacts
+*.s9pk
+docker-images.tar
+
+# Environment
+.env
+.env.*
+
+# Relay lists (user-specific)
+relays_import.json
+relays_blastr.json
+
+# Data directories
+db/
+blossom/
+backups/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+
+# Temporary
+tmp/
+temp/
+.cache/
+
+# Node (if using any JS tools)
+node_modules/
+package-lock.json
+
+# Python (if using any Python tools)
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Go (from haven submodule, just in case)
+vendor/
