@@ -103,6 +103,200 @@ config:
     type: script
 
 # ==============================================================================
+# Properties
+      type: enum
+      name: Database Engine
+      description: Choose database backend. BadgerDB is recommended for most users.
+      values:
+        - badger
+        - lmdb
+      default: badger
+    
+    lmdb-mapsize:
+      type: number
+      name: LMDB Map Size (MB)
+      description: Maximum database size for LMDB (in MB). Only used if LMDB engine is selected.
+      nullable: true
+      default: 10240
+      range: "[1024,102400]"
+      integral: true
+    
+    relay-version:
+      type: string
+      name: Relay Version
+      description: Haven relay version string
+      nullable: false
+      default: "1.0.6"
+      masked: false
+    
+    private-relay-name:
+      type: string
+      name: Private Relay Name
+      description: Display name for your private relay
+      nullable: false
+      default: "Haven Private"
+    
+    private-relay-description:
+      type: string
+      name: Private Relay Description
+      description: Description for your private relay
+      nullable: true
+      default: "My private relay"
+    
+    chat-relay-name:
+      type: string
+      name: Chat Relay Name
+      description: Display name for your chat relay
+      nullable: false
+      default: "Haven Chat"
+    
+    chat-relay-description:
+      type: string
+      name: Chat Relay Description
+      description: Description for your chat relay
+      nullable: true
+      default: "My chat relay"
+    
+    chat-wot-depth:
+      type: number
+      name: Web of Trust Depth
+      description: How many hops in follow graph (1=direct follows, 2=follows of follows, 3=third degree)
+      nullable: false
+      default: 2
+      range: "[1,3]"
+      integral: true
+    
+    chat-wot-refresh-interval:
+      type: number
+      name: WoT Refresh Interval (hours)
+      description: How often to update Web of Trust network (in hours)
+      nullable: false
+      default: 24
+      range: "[6,168]"
+      integral: true
+    
+    chat-minimum-followers:
+      type: number
+      name: Minimum Followers for WoT
+      description: Minimum number of followers required to be considered trusted
+      nullable: false
+      default: 10
+      range: "[1,1000]"
+      integral: true
+    
+    outbox-relay-name:
+      type: string
+      name: Outbox Relay Name
+      description: Display name for your outbox relay
+      nullable: false
+      default: "Haven Outbox"
+    
+    outbox-relay-description:
+      type: string
+      name: Outbox Relay Description
+      description: Description for your outbox relay
+      nullable: true
+      default: "My outbox relay"
+    
+    inbox-relay-name:
+      type: string
+      name: Inbox Relay Name
+      description: Display name for your inbox relay
+      nullable: false
+      default: "Haven Inbox"
+    
+    inbox-relay-description:
+      type: string
+      name: Inbox Relay Description
+      description: Description for your inbox relay
+      nullable: true
+      default: "My inbox relay"
+    
+    inbox-pull-interval:
+      type: number
+      name: Inbox Pull Interval (seconds)
+      description: How often to fetch new events for inbox (in seconds)
+      nullable: false
+      default: 3600
+      range: "[60,86400]"
+      integral: true
+    
+    import-enabled:
+      type: boolean
+      name: Enable Note Import
+      description: Import existing notes from other relays on startup
+      default: false
+    
+    import-start-date:
+      type: string
+      name: Import Start Date
+      description: Start date for importing notes (YYYY-MM-DD format). Leave empty to import all notes.
+      nullable: true
+      placeholder: "2024-01-01"
+    
+    import-seed-relays:
+      type: string
+      name: Import Seed Relays
+      description: Comma-separated list of relay URLs to import from (e.g., wss://relay.damus.io,wss://nos.lol)
+      nullable: true
+      placeholder: "wss://relay.damus.io,wss://nos.lol"
+    
+    backup-enabled:
+      type: boolean
+      name: Enable Cloud Backups
+      description: Automatically backup database to cloud storage
+      default: false
+    
+    backup-provider:
+      type: enum
+      name: Backup Provider
+      description: Choose cloud backup service
+      values:
+        - none
+        - s3
+        - digitalocean
+        - backblaze
+      default: none
+    
+    backup-interval:
+      type: number
+      name: Backup Interval (hours)
+      description: How often to run backups (in hours)
+      nullable: false
+      default: 24
+      range: "[1,168]"
+      integral: true
+    
+    log-level:
+      type: enum
+      name: Log Level
+      description: Logging verbosity level
+      values:
+        - DEBUG
+        - INFO
+        - WARN
+        - ERROR
+      default: INFO
+  get:
+    type: docker
+    image: main
+    entrypoint: config_get.sh
+    args: []
+    io-format: yaml
+    inject: false
+    mounts:
+      main: /data
+  set:
+    type: docker
+    image: main
+    entrypoint: config_set.sh
+    args: []
+    io-format: yaml
+    inject: false
+    mounts:
+      main: /data
+
+# ==============================================================================
 # Properties Display
 # ==============================================================================
 
@@ -111,10 +305,10 @@ properties:
   image: main
   entrypoint: properties.sh
   args: []
-  mounts:
-    main: /data
   io-format: yaml
   inject: false
+  mounts:
+    main: /data
 
 # ==============================================================================
 # Volume Configuration
