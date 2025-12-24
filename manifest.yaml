@@ -4,9 +4,29 @@
 
 id: haven
 title: Haven
-version: 1.0.6
+version: 1.0.8
 ui: false
 release-notes: |
+  **v1.0.8 - Critical Tor Address Persistence Fix (2025-12-25)**
+  
+  CRITICAL Bug Fixes:
+  - **BREAKING FIX**: Tor Hidden Service directory now persists to /data/tor/haven/ (prevents .onion address from changing on updates)
+  - This fix ensures your .onion address remains the same across package updates and restarts
+  - Note: If you already updated to 1.0.7, your .onion address will change one more time with this update, but will then remain stable
+  
+  **v1.0.7 - Blossom Server Hotfix (2025-12-25)**
+  
+  Bug Fixes:
+  - Fixed Blossom file storage path issue (media files now correctly saved to /data/blossom/)
+  - Changed all relay ServiceURLs from https:// to http:// for proper Tor .onion address compatibility
+  - Added detailed error logging for Blossom file operations (create, read, delete)
+  - Fixed BlossomPath configuration to prevent trailing slash issues
+  
+  Improvements:
+  - Enhanced Blossom server initialization logging for easier debugging
+  - Improved error messages for media upload/download operations
+  
+  **v1.0.6 - Initial Release**
   - Initial Start9 release
   - Tor-only operation for maximum privacy
   - Full Blossom server support (NIP-96 & BUD-02 compliant)

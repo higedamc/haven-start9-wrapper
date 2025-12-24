@@ -3,7 +3,8 @@
 # ==============================================================================
 
 # Hidden Service Configuration
-HiddenServiceDir /var/lib/tor/haven/
+# IMPORTANT: Use /data/tor/haven/ to persist the .onion address across updates
+HiddenServiceDir /data/tor/haven/
 HiddenServicePort 80 127.0.0.1:3355
 
 # Security Hardening

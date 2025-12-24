@@ -80,7 +80,7 @@ BLOSSOM_PATH=/data/blossom/
 RELAY_URL=${TOR_ADDRESS}
 RELAY_PORT=3355
 RELAY_BIND_ADDRESS=0.0.0.0
-RELAY_VERSION=${RELAY_VERSION:-1.0.6}
+RELAY_VERSION=${RELAY_VERSION:-1.0.8}
 
 # Private Relay Configuration
 PRIVATE_RELAY_NAME=${PRIVATE_RELAY_NAME:-Haven Private}
@@ -184,26 +184,41 @@ initialize_relay_lists() {
 start_tor() {
     log_info "Starting Tor Hidden Service..."
     
+    # Ensure /data/tor/haven directory exists with correct permissions
+    if [ ! -d /data/tor/haven ]; then
+        log_info "Creating Tor data directory at /data/tor/haven..."
+        mkdir -p /data/tor/haven
+        chown -R haven:haven /data/tor
+        chmod 700 /data/tor/haven
+    fi
+    
+    # Check if this is a first-time setup or restore
+    if [ -f /data/tor/haven/hostname ]; then
+        log_info "Existing .onion address found (will reuse)"
+    else
+        log_info "No existing .onion address found (will generate new one)"
+    fi
+    
     # Start Tor in background as haven user
     su-exec haven tor -f /etc/tor/torrc &
     TOR_PID=$!
     
-    # Wait for Tor to generate .onion address (max 30 seconds)
+    # Wait for Tor to generate/load .onion address (max 30 seconds)
     TIMEOUT=30
     ELAPSED=0
-    while [ ! -f /var/lib/tor/haven/hostname ] && [ $ELAPSED -lt $TIMEOUT ]; do
+    while [ ! -f /data/tor/haven/hostname ] && [ $ELAPSED -lt $TIMEOUT ]; do
         log_debug "Waiting for Tor to generate .onion address... ($ELAPSED/$TIMEOUT seconds)"
         sleep 2
         ELAPSED=$((ELAPSED + 2))
     done
     
-    if [ ! -f /var/lib/tor/haven/hostname ]; then
+    if [ ! -f /data/tor/haven/hostname ]; then
         log_error "Tor failed to generate .onion address within $TIMEOUT seconds"
         exit 1
     fi
     
     # Read and export Tor address
-    export TOR_ADDRESS=$(cat /var/lib/tor/haven/hostname)
+    export TOR_ADDRESS=$(cat /data/tor/haven/hostname)
     log_info "Tor Hidden Service started"
     log_info "Your .onion address: ${GREEN}${TOR_ADDRESS}${NC}"
     
@@ -268,7 +283,7 @@ start_haven() {
 main() {
     log_info "=========================================="
     log_info "  Haven for Start9 Server"
-    log_info "  Version: ${RELAY_VERSION:-1.0.6}"
+    log_info "  Version: ${RELAY_VERSION:-1.0.8}"
     log_info "=========================================="
     log_info ""
     
@@ -279,7 +294,7 @@ main() {
     chown -R haven:haven /data 2>/dev/null || log_warn "Could not change /data ownership (may be restricted by Start9)"
     
     # Try to create subdirectories as root, then change ownership
-    for dir in db blossom backups start9; do
+    for dir in db blossom backups start9 tor; do
         if [ ! -d "/data/$dir" ]; then
             mkdir -p "/data/$dir" 2>/dev/null && chown haven:haven "/data/$dir" 2>/dev/null || log_info "Directory /data/$dir will be created by Haven if needed"
         fi
@@ -293,7 +308,7 @@ main() {
         export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
         export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
         export LMDB_MAPSIZE=$(yq e '.lmdb-mapsize // ""' /data/start9/config.yaml)
-        export RELAY_VERSION=$(yq e '.relay-version // "1.0.6"' /data/start9/config.yaml)
+        export RELAY_VERSION=$(yq e '.relay-version // "1.0.8"' /data/start9/config.yaml)
         
         export PRIVATE_RELAY_NAME=$(yq e '.private-relay-name // "Haven Private"' /data/start9/config.yaml)
         export PRIVATE_RELAY_DESCRIPTION=$(yq e '.private-relay-description // "My private relay"' /data/start9/config.yaml)

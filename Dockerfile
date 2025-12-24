@@ -51,10 +51,10 @@ RUN adduser -D -u 1000 haven
 
 # Create necessary directories
 # Both Tor and Haven run as 'haven' user for security
-RUN mkdir -p /data/db /data/blossom /data/backups /var/lib/tor/haven && \
+# IMPORTANT: /data/tor/haven must be persistent to keep the same .onion address
+RUN mkdir -p /data/db /data/blossom /data/backups /data/tor && \
     chown -R haven:haven /data && \
-    chown -R haven:haven /var/lib/tor && \
-    chmod 700 /var/lib/tor/haven
+    chmod 700 /data/tor
 
 WORKDIR /app
 
