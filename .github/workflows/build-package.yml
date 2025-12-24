@@ -1,0 +1,82 @@
+name: Build Haven Start9 Package
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Install Start9 SDK
+        run: |
+          curl -sSL https://get.start9.com/sdk | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yq jq
+          
+      - name: Build Docker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag start9/haven/main:$(yq '.version' manifest.yaml) \
+            --load \
+            .
+            
+      - name: Save Docker image
+        run: |
+          VERSION=$(yq '.version' manifest.yaml)
+          docker save start9/haven/main:$VERSION -o docker-images.tar
+          
+      - name: Build Start9 package
+        run: |
+          start-sdk pack
+          
+      - name: Verify package
+        run: |
+          start-sdk verify s9pk haven.s9pk
+          
+      - name: Calculate SHA256
+        run: |
+          VERSION=$(yq '.version' manifest.yaml)
+          mkdir -p releases
+          cp haven.s9pk releases/haven-$VERSION.s9pk
+          cd releases && sha256sum haven-$VERSION.s9pk > haven-$VERSION.s9pk.sha256
+          
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: haven-s9pk
+          path: |
+            releases/haven-*.s9pk
+            releases/haven-*.s9pk.sha256
+          retention-days: 30
+          
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            releases/haven-*.s9pk
+            releases/haven-*.s9pk.sha256
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,0 +1,31 @@
+# ==============================================================================
+# Haven Tor Hidden Service Configuration
+# ==============================================================================
+
+# Hidden Service Configuration
+HiddenServiceDir /var/lib/tor/haven/
+HiddenServicePort 80 127.0.0.1:3355
+
+# Security Hardening
+# Disable SOCKS proxy (not needed for hidden service only)
+SocksPort 0
+
+# Disable control port (not needed)
+ControlPort 0
+
+# Disable cookie authentication (not needed)
+CookieAuthentication 0
+
+# Performance Tuning
+# Increase number of entry guards for better reliability
+NumEntryGuards 8
+
+# Circuit build timeout (30 seconds)
+CircuitBuildTimeout 30
+
+# Log Configuration
+Log notice stdout
+
+# Disable client functionality (hidden service only)
+ClientOnly 0
+

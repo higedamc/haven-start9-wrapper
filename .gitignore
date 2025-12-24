@@ -5,6 +5,7 @@ docker-images.tar
 # Environment
 .env
 .env.*
+dev-config.env
 
 # Relay lists (user-specific)
 relays_import.json
@@ -14,6 +15,7 @@ relays_blastr.json
 db/
 blossom/
 backups/
+.dev-data/
 
 # OS
 .DS_Store
