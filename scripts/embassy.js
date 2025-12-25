@@ -3962,7 +3962,7 @@ const getConfig1 = mod3.getConfig({
         "name": "Relay Version",
         "description": "Haven relay version string",
         "nullable": false,
-        "default": "1.0.6",
+        "default": "1.1.2",
         "masked": false
     },
     "private-relay-name": {
@@ -4115,6 +4115,14 @@ const getConfig1 = mod3.getConfig({
             "ERROR"
         ],
         "default": "INFO"
+    },
+    "blastr-relays": {
+        "type": "string",
+        "name": "Blastr Relay List",
+        "description": "Comma-separated list of relay URLs to broadcast events to. Events posted to Haven will be automatically forwarded to these relays.",
+        "nullable": true,
+        "placeholder": "wss://relay.damus.io,wss://nos.lol,wss://relay.nostr.band",
+        "default": "relay.damus.io,nos.lol,relay.nostr.band,relay.snort.social,nostr.land,nostr.mom,relay.nos.social,relay.primal.net"
     }
 });
 const setConfig1 = async (effects, newConfig)=>{
@@ -4123,6 +4131,20 @@ const setConfig1 = async (effects, newConfig)=>{
         const npubPattern = /^npub1[a-z0-9]{58}$/;
         if (!npubPattern.test(npub)) {
             throw new Error('Invalid npub format. Must start with "npub1" and be 63 characters long (e.g., npub1abc...xyz)');
+        }
+    }
+    if (newConfig['blastr-relays']) {
+        const blastrRelays = newConfig['blastr-relays'];
+        if (blastrRelays && blastrRelays.trim().length > 0) {
+            const relays = blastrRelays.split(',').map((r)=>r.trim()).filter((r)=>r.length > 0);
+            for (const relay of relays){
+                const hasProtocol = relay.startsWith('wss://') || relay.startsWith('ws://');
+                const domainPart = hasProtocol ? relay.split('://')[1] : relay;
+                const domainPattern = /^[a-zA-Z0-9][a-zA-Z0-9-_.]*\.[a-zA-Z]{2,}$/;
+                if (!domainPattern.test(domainPart)) {
+                    throw new Error(`Invalid relay URL: "${relay}". Each relay must be a valid domain (e.g., "relay.damus.io") or full WebSocket URL (e.g., "wss://relay.damus.io")`);
+                }
+            }
         }
     }
     return mod3.setConfig(effects, newConfig);

@@ -80,7 +80,7 @@ BLOSSOM_PATH=/data/blossom/
 RELAY_URL=${TOR_ADDRESS}
 RELAY_PORT=3355
 RELAY_BIND_ADDRESS=0.0.0.0
-RELAY_VERSION=${RELAY_VERSION:-1.0.8}
+RELAY_VERSION=${RELAY_VERSION:-1.1.4}
 
 # Private Relay Configuration
 PRIVATE_RELAY_NAME=${PRIVATE_RELAY_NAME:-Haven Private}
@@ -162,19 +162,110 @@ initialize_relay_lists() {
     # Haven will populate these files during operation
     if [ ! -f /app/relays_import.json ]; then
         log_info "Creating empty import relay list in /app..."
-        su-exec haven sh -c 'echo "[]" > /app/relays_import.json'
+        echo "[]" > /app/relays_import.json
     else
         log_info "Import relay list already exists"
     fi
     
-    if [ ! -f /app/relays_blastr.json ]; then
-        log_info "Creating empty blastr relay list in /app..."
-        su-exec haven sh -c 'echo "[]" > /app/relays_blastr.json'
-    else
-        log_info "Blastr relay list already exists"
+    # Blastr relay list from config
+    log_info "Reading blastr relay configuration..."
+    
+    # Check if config file exists
+    if [ ! -f /data/start9/config.yaml ]; then
+        log_warn "Config file not found at /data/start9/config.yaml"
+        echo "[]" > /app/relays_blastr.json
+        log_info "Relay lists initialized (no config)"
+        return
     fi
     
+    log_debug "Config file exists, reading blastr-relays..."
+    
+    # Read the raw config value
+    local blastr_relays=""
+    blastr_relays=$(yq e '.["blastr-relays"] // ""' /data/start9/config.yaml 2>&1)
+    local yq_exit=$?
+    
+    log_debug "yq exit code: $yq_exit"
+    log_debug "Raw value from yq: '$blastr_relays'"
+    
+    if [ $yq_exit -ne 0 ]; then
+        log_error "Failed to read config with yq: $blastr_relays"
+        echo "[]" > /app/relays_blastr.json
+        log_info "Relay lists initialized (yq error)"
+        return
+    fi
+    
+    # Check if we got a valid value
+    if [ -z "$blastr_relays" ] || [ "$blastr_relays" = "null" ]; then
+        log_info "No blastr relays configured (empty or null)"
+        echo "[]" > /app/relays_blastr.json
+        log_info "Relay lists initialized (empty config)"
+        return
+    fi
+    
+    log_info "Processing blastr relay list from config..."
+    log_info "Raw blastr_relays value: '$blastr_relays'"
+    
+    # Convert comma-separated string to JSON array using jq
+    # Split by comma, trim whitespace, filter empty strings
+    local jq_result
+    jq_result=$(echo "$blastr_relays" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";"")) | map(select(length > 0))' 2>&1)
+    local jq_exit=$?
+    
+    log_debug "jq exit code: $jq_exit"
+    log_debug "jq result: $jq_result"
+    
+    if [ $jq_exit -eq 0 ]; then
+        echo "$jq_result" > /app/relays_blastr.json
+        local relay_count=$(echo "$jq_result" | jq '. | length' 2>/dev/null || echo "0")
+        log_info "✅ Blastr relays configured: $relay_count relay(s)"
+        log_info "Blastr relay list content: $(cat /app/relays_blastr.json)"
+    else
+        log_error "Failed to parse blastr relay list with jq: $jq_result"
+        echo "[]" > /app/relays_blastr.json
+    fi
+    
+    # Ensure files have correct permissions
+    chmod 644 /app/relays_import.json /app/relays_blastr.json 2>/dev/null || true
+    
     log_info "Relay lists initialized"
+}
+
+# ==============================================================================
+# IPv6 Connectivity Check
+# ==============================================================================
+
+check_ipv6() {
+    log_info "Checking IPv6 connectivity..."
+    
+    # Check if IPv6 is available in the kernel
+    if [ -f /proc/net/if_inet6 ]; then
+        log_info "✅ IPv6 kernel support detected"
+        
+        # Show IPv6 addresses
+        if command -v ip >/dev/null 2>&1; then
+            local ipv6_addrs=$(ip -6 addr show 2>/dev/null | grep -c "inet6")
+            if [ "$ipv6_addrs" -gt 0 ]; then
+                log_info "✅ IPv6 addresses configured: $ipv6_addrs"
+                ip -6 addr show 2>/dev/null | grep "inet6" | head -3 | while read line; do
+                    log_debug "  $line"
+                done
+            else
+                log_warn "⚠️  No IPv6 addresses found"
+            fi
+        fi
+        
+        # Test IPv6 connectivity (optional, may timeout in some environments)
+        log_debug "Testing IPv6 connectivity to google.com..."
+        if ping6 -c 1 -W 2 google.com >/dev/null 2>&1; then
+            log_info "✅ IPv6 internet connectivity confirmed"
+        else
+            log_warn "⚠️  IPv6 internet connectivity test failed (may work through Tor)"
+        fi
+    else
+        log_warn "⚠️  IPv6 is NOT available (Blastr to IPv6-only relays will fail)"
+        log_warn "⚠️  This is normal in some Docker/Start9 environments"
+    fi
 }
 
 # ==============================================================================
@@ -283,7 +374,7 @@ start_haven() {
 main() {
     log_info "=========================================="
     log_info "  Haven for Start9 Server"
-    log_info "  Version: ${RELAY_VERSION:-1.0.8}"
+    log_info "  Version: ${RELAY_VERSION:-1.1.4}"
     log_info "=========================================="
     log_info ""
     
@@ -308,7 +399,7 @@ main() {
         export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
         export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
         export LMDB_MAPSIZE=$(yq e '.lmdb-mapsize // ""' /data/start9/config.yaml)
-        export RELAY_VERSION=$(yq e '.relay-version // "1.0.8"' /data/start9/config.yaml)
+        export RELAY_VERSION=$(yq e '.relay-version // "1.1.4"' /data/start9/config.yaml)
         
         export PRIVATE_RELAY_NAME=$(yq e '.private-relay-name // "Haven Private"' /data/start9/config.yaml)
         export PRIVATE_RELAY_DESCRIPTION=$(yq e '.private-relay-description // "My private relay"' /data/start9/config.yaml)
@@ -339,6 +430,7 @@ main() {
     
     # Run initialization steps
     validate_config
+    check_ipv6
     initialize_relay_lists
     
     # Start Tor (must start before generating .env since TOR_ADDRESS is needed)

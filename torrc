@@ -30,3 +30,15 @@ Log notice stdout
 # Disable client functionality (hidden service only)
 ClientOnly 0
 
+# ==============================================================================
+# IPv6 Support for Blastr Relay Broadcasting
+# ==============================================================================
+# Enable IPv6 for outbound connections to IPv6-only relays
+ClientUseIPv6 1
+
+# Prefer IPv6 when available
+ClientPreferIPv6ORPort 1
+
+# Allow IPv6 exit connections
+IPv6Exit 1
+

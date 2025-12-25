@@ -40,7 +40,9 @@ RUN apk add --no-cache \
     curl \
     jq \
     wget \
-    su-exec
+    su-exec \
+    iputils \
+    iproute2
 
 # Install yq from GitHub releases (not available in Alpine repos)
 RUN wget -qO /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/v4.50.1/yq_linux_amd64" && \

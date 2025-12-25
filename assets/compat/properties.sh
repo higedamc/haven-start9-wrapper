@@ -31,11 +31,20 @@ else
 fi
 
 # Get Haven version from config
-if [ -f /data/env.sh ]; then
-    source /data/env.sh
-    VERSION=${RELAY_VERSION:-"1.0.6"}
+if [ -f /data/start9/config.yaml ]; then
+    VERSION=$(yq e '.["relay-version"] // "1.1.4"' /data/start9/config.yaml 2>/dev/null || echo "1.1.4")
 else
-    VERSION="1.0.6"
+    VERSION="1.1.4"
+fi
+
+# Get Blastr relay configuration
+BLASTR_RELAYS=""
+BLASTR_COUNT="0"
+if [ -f /data/start9/config.yaml ]; then
+    BLASTR_RELAYS=$(yq e '.["blastr-relays"] // ""' /data/start9/config.yaml 2>/dev/null || echo "")
+    if [ -n "$BLASTR_RELAYS" ] && [ "$BLASTR_RELAYS" != "null" ]; then
+        BLASTR_COUNT=$(echo "$BLASTR_RELAYS" | tr ',' '\n' | wc -l | tr -d ' ')
+    fi
 fi
 
 # Output as YAML for Start9
@@ -117,6 +126,12 @@ data:
     type: string
     value: "$(du -sh /data 2>/dev/null | cut -f1 || echo "0B")"
     description: Total Haven data storage
+    qr: false
+  
+  Blastr Relays:
+    type: string
+    value: "$BLASTR_COUNT relay(s) configured"
+    description: Number of Blastr relays for event broadcasting
     qr: false
 EOF
 

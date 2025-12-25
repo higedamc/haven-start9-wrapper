@@ -38,7 +38,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "name": "Relay Version",
     "description": "Haven relay version string",
     "nullable": false,
-    "default": "1.0.6",
+    "default": "1.1.2",
     "masked": false,
   },
   "private-relay-name": {
@@ -181,5 +181,13 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "description": "Logging verbosity level",
     "values": ["DEBUG", "INFO", "WARN", "ERROR"],
     "default": "INFO",
+  },
+  "blastr-relays": {
+    "type": "string",
+    "name": "Blastr Relay List",
+    "description": "Comma-separated list of relay URLs to broadcast events to. Events posted to Haven will be automatically forwarded to these relays.",
+    "nullable": true,
+    "placeholder": "wss://relay.damus.io,wss://nos.lol,wss://relay.nostr.band",
+    "default": "relay.damus.io,nos.lol,relay.nostr.band,relay.snort.social,nostr.land,nostr.mom,relay.nos.social,relay.primal.net",
   },
 });
