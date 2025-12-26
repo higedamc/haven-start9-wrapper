@@ -4,9 +4,30 @@
 
 id: haven
 title: Haven
-version: 1.1.4
+version: 1.1.5
 ui: false
 release-notes: |
+  **v1.1.5 - Import Notes Feature (2025-12-27)**
+  
+  New Features:
+  - **Manual Import Action**: Import your past notes and mentions from external relays
+  - **Import Timeout Configuration**: Customize timeout values for owner notes (10-300s) and tagged notes (30-600s)
+  - **Detailed Progress Logging**: Real-time progress tracking with batch numbers, ETAs, and statistics
+  - **Import Summary Report**: Comprehensive report with total notes imported, duration, and storage locations
+  
+  Improvements:
+  - Enhanced import relay configuration with detailed validation
+  - Colored log output for better readability
+  - Progress percentage and estimated completion time
+  - Separate log files for each import session (`/data/logs/import-*.log`)
+  - Failed note tracking and reporting
+  
+  Configuration:
+  - Added `import-owner-notes-timeout` (default: 30s)
+  - Added `import-tagged-notes-timeout` (default: 120s)
+  - Added `import-query-interval` (default: 360000s)
+  - Import seed relays now support both CSV format and JSON arrays
+  
   **v1.1.4 - Blastr Timeout Optimization (2025-12-25)**
   
   Improvements:
@@ -173,6 +194,55 @@ config:
     type: script
   set:
     type: script
+
+# ==============================================================================
+# Actions
+# ==============================================================================
+
+actions:
+  import-notes:
+    name: Import Past Notes
+    description: |
+      Configure Haven to import your past notes and mentions on next restart.
+      
+      **How it works:**
+      1. This action validates your import configuration
+      2. Creates an import request flag
+      3. You must RESTART Haven service to begin the import
+      4. Haven will start in import mode and fetch:
+         - All your notes from the specified start date
+         - Notes that mention you (replies, reactions, zaps, etc.)
+      5. After import completes, Haven automatically restarts in normal mode
+      
+      **Time required:**
+      - Several minutes to hours depending on amount of data
+      - You can monitor progress in Haven's logs during import
+      
+      **Before using:**
+      - Configure "Import Start Date" (e.g., 2024-01-01)
+      - Configure "Import Seed Relays" (comma-separated URLs)
+      - Optionally adjust timeout values
+    warning: |
+      ⚠️ IMPORTANT: After running this action, you MUST restart Haven!
+      
+      The import can take a long time:
+      - 3 months of data: 5-15 minutes
+      - 1 year of data: 15-45 minutes
+      - 2+ years of data: 45 minutes - 2 hours
+      
+      Do NOT stop Haven during the import as it may leave incomplete data.
+      Check the logs to monitor import progress.
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: docker_entrypoint.sh
+      args: ["import-notes"]
+      mounts:
+        main: /data
+      io-format: json
 
 # ==============================================================================
 # Properties Display

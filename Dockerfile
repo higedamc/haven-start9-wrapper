@@ -79,13 +79,15 @@ COPY assets/compat/config_get.sh /usr/local/bin/
 COPY assets/compat/config_set.sh /usr/local/bin/
 COPY assets/compat/properties.sh /usr/local/bin/
 COPY assets/compat/check-web.sh /usr/local/bin/
+COPY scripts/procedures/importNotes.sh /usr/local/bin/
 
 # Make scripts executable
 RUN chmod +x /usr/local/bin/docker_entrypoint.sh \
     /usr/local/bin/config_get.sh \
     /usr/local/bin/config_set.sh \
     /usr/local/bin/properties.sh \
-    /usr/local/bin/check-web.sh
+    /usr/local/bin/check-web.sh \
+    /usr/local/bin/importNotes.sh
 
 # Change ownership of /app to haven user so it can create symlinks
 RUN chown -R haven:haven /app

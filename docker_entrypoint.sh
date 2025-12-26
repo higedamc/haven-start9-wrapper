@@ -13,19 +13,19 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $1" >&2
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" >&2
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 log_debug() {
-    echo -e "${CYAN}[DEBUG]${NC} $1"
+    echo -e "${CYAN}[DEBUG]${NC} $1" >&2
 }
 
 # ==============================================================================
@@ -80,7 +80,7 @@ BLOSSOM_PATH=/data/blossom/
 RELAY_URL=${TOR_ADDRESS}
 RELAY_PORT=3355
 RELAY_BIND_ADDRESS=0.0.0.0
-RELAY_VERSION=${RELAY_VERSION:-1.1.4}
+RELAY_VERSION=${RELAY_VERSION:-1.1.5}
 
 # Private Relay Configuration
 PRIVATE_RELAY_NAME=${PRIVATE_RELAY_NAME:-Haven Private}
@@ -112,9 +112,9 @@ INBOX_PULL_INTERVAL_SECONDS=${INBOX_PULL_INTERVAL_SECONDS:-3600}
 
 # Import Settings
 IMPORT_START_DATE=${IMPORT_START_DATE:-}
-IMPORT_OWNER_NOTES_FETCH_TIMEOUT_SECONDS=30
-IMPORT_TAGGED_NOTES_FETCH_TIMEOUT_SECONDS=120
-IMPORT_QUERY_INTERVAL_SECONDS=360000
+IMPORT_OWNER_NOTES_FETCH_TIMEOUT_SECONDS=${IMPORT_OWNER_NOTES_TIMEOUT:-30}
+IMPORT_TAGGED_NOTES_FETCH_TIMEOUT_SECONDS=${IMPORT_TAGGED_NOTES_TIMEOUT:-120}
+IMPORT_QUERY_INTERVAL_SECONDS=${IMPORT_QUERY_INTERVAL:-360000}
 IMPORT_SEED_RELAYS_FILE=/app/relays_import.json
 BLASTR_RELAYS_FILE=/app/relays_blastr.json
 
@@ -158,13 +158,47 @@ validate_config() {
 initialize_relay_lists() {
     log_info "Initializing relay lists..."
     
-    # Create empty relay list files in /app as haven user
-    # Haven will populate these files during operation
-    if [ ! -f /app/relays_import.json ]; then
-        log_info "Creating empty import relay list in /app..."
+    # Check if config file exists
+    if [ ! -f /data/start9/config.yaml ]; then
+        log_warn "Config file not found at /data/start9/config.yaml"
         echo "[]" > /app/relays_import.json
+        echo "[]" > /app/relays_blastr.json
+        log_info "Relay lists initialized (no config)"
+        return
+    fi
+    
+    # Import seed relays from config
+    log_info "Reading import seed relays configuration..."
+    local import_relays=""
+    import_relays=$(yq e '.["import-seed-relays"] // ""' /data/start9/config.yaml 2>&1)
+    local yq_exit=$?
+    
+    log_debug "Import seed relays - yq exit code: $yq_exit"
+    log_debug "Raw import relays value: '$import_relays'"
+    
+    if [ $yq_exit -eq 0 ] && [ -n "$import_relays" ] && [ "$import_relays" != "null" ]; then
+        log_info "Processing import seed relay list from config..."
+        local import_jq_result
+        import_jq_result=$(echo "$import_relays" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";"")) | map(select(length > 0))' 2>&1)
+        local import_jq_exit=$?
+        
+        if [ $import_jq_exit -eq 0 ]; then
+            echo "$import_jq_result" > /app/relays_import.json
+            local import_relay_count=$(echo "$import_jq_result" | jq '. | length' 2>/dev/null || echo "0")
+            log_info "✅ Import seed relays configured: $import_relay_count relay(s)"
+            
+            # Show relay list for debugging
+            log_debug "Import relay list details:"
+            echo "$import_jq_result" | jq -r '.[]' 2>/dev/null | while read -r relay; do
+                log_debug "  • $relay"
+            done
+        else
+            log_error "Failed to parse import relay list with jq: $import_jq_result"
+            echo "[]" > /app/relays_import.json
+        fi
     else
-        log_info "Import relay list already exists"
+        log_info "No import seed relays configured (empty or null)"
+        echo "[]" > /app/relays_import.json
     fi
     
     # Blastr relay list from config
@@ -328,12 +362,71 @@ start_tor() {
 start_haven() {
     log_info "Starting Haven relay server..."
     
+    # Check if import was requested via action
+    if [ -f /data/import-requested ]; then
+        log_info "Import request detected from action"
+        export RUN_IMPORT=true
+        
+        # Read import details
+        if command -v jq >/dev/null 2>&1; then
+            local start_date=$(jq -r '.startDate // "unknown"' /data/import-requested 2>/dev/null)
+            local relay_count=$(jq -r '.relayCount // "unknown"' /data/import-requested 2>/dev/null)
+            log_info "Import configuration: Start date=$start_date, Relays=$relay_count"
+        fi
+    fi
+    
     # Check if this is an import run
     if [ "$RUN_IMPORT" = "true" ]; then
-        log_info "Running in import mode..."
+        log_info "=========================================="
+        log_info "  Running in IMPORT MODE"
+        log_info "=========================================="
+        log_info "Import configuration:"
+        log_info "  • Start date: ${IMPORT_START_DATE:-not set}"
+        log_info "  • Owner timeout: ${IMPORT_OWNER_NOTES_TIMEOUT:-30}s"
+        log_info "  • Tagged timeout: ${IMPORT_TAGGED_NOTES_TIMEOUT:-120}s"
+        
+        # Count relays from JSON file
+        if [ -f /app/relays_import.json ]; then
+            local relay_count=$(jq '. | length' /app/relays_import.json 2>/dev/null || echo "0")
+            log_info "  • Seed relays: $relay_count"
+            
+            if [ "$relay_count" -gt 0 ]; then
+                log_debug "Configured import relays:"
+                jq -r '.[]' /app/relays_import.json 2>/dev/null | while read -r relay; do
+                    log_debug "    → $relay"
+                done
+            fi
+        fi
+        
+        log_info ""
+        log_info "This may take a long time depending on:"
+        log_info "  • Amount of historical data"
+        log_info "  • Number of seed relays"
+        log_info "  • Network speed"
+        log_info ""
+        log_info "Starting import process..."
+        log_info "=========================================="
+        log_info ""
+        
         su-exec haven /app/haven --import
         EXIT_CODE=$?
-        log_info "Import completed with exit code: $EXIT_CODE"
+        
+        log_info ""
+        log_info "=========================================="
+        if [ $EXIT_CODE -eq 0 ]; then
+            log_info "Import completed successfully!"
+            
+            # Remove import request flag
+            if [ -f /data/import-requested ]; then
+                rm -f /data/import-requested
+                log_info "Import flag cleared. Haven will restart in normal mode."
+            fi
+        else
+            log_error "Import failed with exit code: $EXIT_CODE"
+            log_error "Import flag NOT cleared. Fix issues and restart Haven."
+        fi
+        log_info "=========================================="
+        
         exit $EXIT_CODE
     fi
     
@@ -374,7 +467,7 @@ start_haven() {
 main() {
     log_info "=========================================="
     log_info "  Haven for Start9 Server"
-    log_info "  Version: ${RELAY_VERSION:-1.1.4}"
+    log_info "  Version: ${RELAY_VERSION:-1.1.5}"
     log_info "=========================================="
     log_info ""
     
@@ -399,7 +492,7 @@ main() {
         export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
         export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
         export LMDB_MAPSIZE=$(yq e '.lmdb-mapsize // ""' /data/start9/config.yaml)
-        export RELAY_VERSION=$(yq e '.relay-version // "1.1.4"' /data/start9/config.yaml)
+        export RELAY_VERSION=$(yq e '.relay-version // "1.1.5"' /data/start9/config.yaml)
         
         export PRIVATE_RELAY_NAME=$(yq e '.private-relay-name // "Haven Private"' /data/start9/config.yaml)
         export PRIVATE_RELAY_DESCRIPTION=$(yq e '.private-relay-description // "My private relay"' /data/start9/config.yaml)
@@ -418,6 +511,10 @@ main() {
         export INBOX_PULL_INTERVAL_SECONDS=$(yq e '.inbox-pull-interval // "3600"' /data/start9/config.yaml)
         
         export IMPORT_START_DATE=$(yq e '.import-start-date // ""' /data/start9/config.yaml)
+        export IMPORT_SEED_RELAYS=$(yq e '.import-seed-relays // ""' /data/start9/config.yaml)
+        export IMPORT_OWNER_NOTES_TIMEOUT=$(yq e '.import-owner-notes-timeout // "30"' /data/start9/config.yaml)
+        export IMPORT_TAGGED_NOTES_TIMEOUT=$(yq e '.import-tagged-notes-timeout // "120"' /data/start9/config.yaml)
+        export IMPORT_QUERY_INTERVAL=$(yq e '.import-query-interval // "360000"' /data/start9/config.yaml)
         export BACKUP_PROVIDER=$(yq e '.backup-provider // "none"' /data/start9/config.yaml)
         export BACKUP_INTERVAL_HOURS=$(yq e '.backup-interval // "24"' /data/start9/config.yaml)
         export LOG_LEVEL=$(yq e '.log-level // "INFO"' /data/start9/config.yaml)
@@ -427,6 +524,26 @@ main() {
         log_warn "Start9 configuration file not found at /data/start9/config.yaml"
         log_warn "Using default values and environment variables"
     fi
+    
+    # Check for action arguments
+    echo "DEBUG: Checking action arguments: \$1=$1" >&2
+    if [ "$1" = "import-notes" ]; then
+        log_info "Action: import-notes detected"
+        echo "DEBUG: Action matched! Preparing to run importNotes.sh" >&2
+        echo "DEBUG: Environment variables to be passed:" >&2
+        echo "  OWNER_NPUB=${OWNER_NPUB}" >&2
+        echo "  IMPORT_START_DATE=${IMPORT_START_DATE}" >&2
+        echo "  IMPORT_SEED_RELAYS=${IMPORT_SEED_RELAYS}" >&2
+        echo "  IMPORT_OWNER_NOTES_TIMEOUT=${IMPORT_OWNER_NOTES_TIMEOUT}" >&2
+        echo "  IMPORT_TAGGED_NOTES_TIMEOUT=${IMPORT_TAGGED_NOTES_TIMEOUT}" >&2
+        # Export config for importNotes.sh
+        export CONFIG_FILE="/data/start9/config.yaml"
+        echo "DEBUG: CONFIG_FILE=${CONFIG_FILE}" >&2
+        echo "DEBUG: Executing importNotes.sh..." >&2
+        # Run import notes action
+        exec /usr/local/bin/importNotes.sh
+    fi
+    echo "DEBUG: No action matched, continuing with normal startup" >&2
     
     # Run initialization steps
     validate_config
@@ -446,6 +563,6 @@ main() {
     exit $?
 }
 
-# Run main function
-main
+# Run main function with arguments
+main "$@"
 
