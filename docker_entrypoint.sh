@@ -362,19 +362,6 @@ start_tor() {
 start_haven() {
     log_info "Starting Haven relay server..."
     
-    # Check if import was requested via action
-    if [ -f /data/import-requested ]; then
-        log_info "Import request detected from action"
-        export RUN_IMPORT=true
-        
-        # Read import details
-        if command -v jq >/dev/null 2>&1; then
-            local start_date=$(jq -r '.startDate // "unknown"' /data/import-requested 2>/dev/null)
-            local relay_count=$(jq -r '.relayCount // "unknown"' /data/import-requested 2>/dev/null)
-            log_info "Import configuration: Start date=$start_date, Relays=$relay_count"
-        fi
-    fi
-    
     # Check if this is an import run
     if [ "$RUN_IMPORT" = "true" ]; then
         log_info "=========================================="
@@ -414,20 +401,29 @@ start_haven() {
         log_info ""
         log_info "=========================================="
         if [ $EXIT_CODE -eq 0 ]; then
-            log_info "Import completed successfully!"
+            log_info "✅ Import completed successfully!"
             
             # Remove import request flag
             if [ -f /data/import-requested ]; then
                 rm -f /data/import-requested
-                log_info "Import flag cleared. Haven will restart in normal mode."
+                log_info "Import flag cleared"
             fi
+            
+            log_info "Restarting Haven in normal mode..."
+            log_info "=========================================="
+            log_info ""
+            
+            # Unset import flag and restart
+            unset RUN_IMPORT
+            # Re-execute entrypoint to start Haven normally
+            exec /usr/local/bin/docker_entrypoint.sh
         else
-            log_error "Import failed with exit code: $EXIT_CODE"
-            log_error "Import flag NOT cleared. Fix issues and restart Haven."
+            log_error "❌ Import failed with exit code: $EXIT_CODE"
+            log_error "Import flag NOT cleared. Check logs and fix issues."
+            log_error "Restart Haven after fixing the issues."
+            log_info "=========================================="
+            exit $EXIT_CODE
         fi
-        log_info "=========================================="
-        
-        exit $EXIT_CODE
     fi
     
     # Start Haven in background as haven user
@@ -544,6 +540,12 @@ main() {
         exec /usr/local/bin/importNotes.sh
     fi
     echo "DEBUG: No action matched, continuing with normal startup" >&2
+    
+    # Check for import request flag
+    if [ -f /data/import-requested ]; then
+        log_info "Import request detected from action"
+        export RUN_IMPORT=true
+    fi
     
     # Run initialization steps
     validate_config

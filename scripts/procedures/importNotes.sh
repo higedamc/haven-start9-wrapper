@@ -127,19 +127,7 @@ EOF
     exit 1
 fi
 
-# TEMPORARY: Quick test - return success immediately
 log_info "Configuration validated successfully!" >&2
-RELAY_COUNT=$(echo "$IMPORT_SEED_RELAYS" | tr ',' '\n' | grep -v '^[[:space:]]*$' | wc -l | tr -d ' ')
-cat <<EOF
-{
-  "version": "0",
-  "message": "✅ Import configuration validated!\n\nOwner: ${OWNER_NPUB:0:20}...${OWNER_NPUB: -10}\nStart Date: ${IMPORT_START_DATE}\nRelays: ${RELAY_COUNT}\n\nREADY TO IMPORT\n(Full import implementation coming next)",
-  "value": null,
-  "qr": false,
-  "copyable": true
-}
-EOF
-exit 0
 
 echo "" >&2
 log_info "========================================="
@@ -214,12 +202,56 @@ log_info "Estimated batches: ~${ESTIMATED_BATCHES} (10 days each)"
 log_info "Estimated time: $(( ESTIMATED_BATCHES * IMPORT_OWNER_NOTES_TIMEOUT / 60 ))-$(( ESTIMATED_BATCHES * IMPORT_OWNER_NOTES_TIMEOUT / 30 )) minutes"
 
 echo "" >&2
-log_warn "⚠️  IMPORTANT NOTES:"
-log_warn "  • This import may take a long time"
-log_warn "  • Do not stop Haven during import"
-log_warn "  • Monitor this log for progress"
-log_warn "  • Check Haven container logs for detailed relay info"
-echo "" >&2
+log_info "========================================="
+log_info "Creating Import Request"
+log_info "========================================="
+
+# Create flag file to signal docker_entrypoint.sh to run import
+FLAG_FILE="/data/import-requested"
+log_info "Creating import request flag: $FLAG_FILE" >&2
+
+if touch "$FLAG_FILE" 2>&1; then
+    log_success "Import request flag created successfully" >&2
+else
+    log_error "Failed to create import request flag" >&2
+    cat <<EOF
+{
+  "version": "0",
+  "message": "Failed to create import request flag at $FLAG_FILE. Check permissions.",
+  "value": null,
+  "qr": false,
+  "copyable": false
+}
+EOF
+    exit 1
+fi
+
+# Calculate estimated time
+ESTIMATED_MINUTES=$(( ESTIMATED_BATCHES * IMPORT_OWNER_NOTES_TIMEOUT / 60 ))
+if [ "$ESTIMATED_MINUTES" -lt 10 ]; then
+    TIME_DISPLAY="10-30 minutes"
+elif [ "$ESTIMATED_MINUTES" -lt 60 ]; then
+    TIME_DISPLAY="${ESTIMATED_MINUTES}-$(( ESTIMATED_MINUTES * 2 )) minutes"
+else
+    ESTIMATED_HOURS=$(( ESTIMATED_MINUTES / 60 ))
+    TIME_DISPLAY="${ESTIMATED_HOURS}-$(( ESTIMATED_HOURS * 2 )) hours"
+fi
+
+# Return success message with restart instructions
+log_success "Import configured successfully!" >&2
+cat <<EOF
+{
+  "version": "0",
+  "message": "✅ Import Configured Successfully!\n\n📋 Configuration:\n  • Owner: ${OWNER_NPUB:0:20}...${OWNER_NPUB: -10}\n  • Start Date: ${IMPORT_START_DATE}\n  • Relays: ${RELAY_COUNT}\n  • Days to import: ~${DAYS_DIFF}\n\n⏱️  Estimated Time: ${TIME_DISPLAY}\n\n🔄 Next Steps:\n1. **RESTART Haven service** to begin import\n2. Monitor logs for progress\n3. Haven will automatically restart in normal mode after import completes\n\n⚠️  Do not stop Haven during the import process!",
+  "value": null,
+  "qr": false,
+  "copyable": true
+}
+EOF
+exit 0
+
+# The rest of the code below is not executed in this action
+# It will be executed by docker_entrypoint.sh when the flag file is detected
 
 # Export environment variables for Haven
 export IMPORT_START_DATE
