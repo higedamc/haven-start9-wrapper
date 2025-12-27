@@ -263,13 +263,17 @@ interfaces:
   main:
     name: Nostr Relay Interface
     description: Main Nostr relay endpoint (WebSocket) and Blossom media server
-    tor-config: null
+    tor-config:
+      port-mapping:
+        80: "3355"
     lan-config: null
-    ui: false
+    ui: true
     protocols:
       - tcp
       - http
       - ws
+  # Internal Tor management - Haven manages its own Tor instance
+  # The tor-config above tells Start9 where to route traffic within the container
 # ==============================================================================
 # Dependencies
 # ==============================================================================
