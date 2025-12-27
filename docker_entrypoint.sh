@@ -395,12 +395,62 @@ start_haven() {
         log_info "=========================================="
         log_info ""
         
-        su-exec haven /app/haven --import
-        EXIT_CODE=$?
+        # Create a temporary log file to capture Haven output
+        IMPORT_LOG_FILE="/tmp/haven-import-$$.log"
+        
+        # Start Haven in background and capture output
+        su-exec haven /app/haven --import 2>&1 | tee "$IMPORT_LOG_FILE" &
+        HAVEN_PID=$!
+        
+        log_info "Haven import started with PID: $HAVEN_PID"
+        log_info "Monitoring import progress..."
+        
+        # Monitor Haven logs for completion message
+        IMPORT_COMPLETE=false
+        TIMEOUT=7200  # 2 hours max
+        ELAPSED=0
+        
+        while kill -0 $HAVEN_PID 2>/dev/null; do
+            sleep 5
+            ELAPSED=$((ELAPSED + 5))
+            
+            # Check if import completion message appears in log
+            if [ -f "$IMPORT_LOG_FILE" ] && grep -q "tagged import complete" "$IMPORT_LOG_FILE"; then
+                log_info "✅ Import completion detected!"
+                IMPORT_COMPLETE=true
+                
+                # Give Haven a moment to finish writing logs
+                sleep 5
+                
+                # Stop Haven gracefully
+                log_info "Stopping Haven..."
+                kill -TERM $HAVEN_PID 2>/dev/null || true
+                sleep 3
+                
+                # Force kill if still running
+                if kill -0 $HAVEN_PID 2>/dev/null; then
+                    kill -KILL $HAVEN_PID 2>/dev/null || true
+                fi
+                
+                break
+            fi
+            
+            # Timeout check
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+                log_error "Import timeout after ${TIMEOUT}s"
+                kill -TERM $HAVEN_PID 2>/dev/null || true
+                sleep 2
+                kill -KILL $HAVEN_PID 2>/dev/null || true
+                break
+            fi
+        done
+        
+        # Cleanup temp log file
+        rm -f "$IMPORT_LOG_FILE"
         
         log_info ""
         log_info "=========================================="
-        if [ $EXIT_CODE -eq 0 ]; then
+        if [ "$IMPORT_COMPLETE" = "true" ]; then
             log_info "✅ Import completed successfully!"
             
             # Remove import request flag
@@ -418,11 +468,11 @@ start_haven() {
             # Re-execute entrypoint to start Haven normally
             exec /usr/local/bin/docker_entrypoint.sh
         else
-            log_error "❌ Import failed with exit code: $EXIT_CODE"
+            log_error "❌ Import failed or timed out"
             log_error "Import flag NOT cleared. Check logs and fix issues."
             log_error "Restart Haven after fixing the issues."
             log_info "=========================================="
-            exit $EXIT_CODE
+            exit 1
         fi
     fi
     

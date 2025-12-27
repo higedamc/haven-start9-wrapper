@@ -129,11 +129,37 @@ Haven の Blossom サーバーは両方に準拠しています。
 
 プライバシーとセキュリティが最大化されます。
 
+### Q13: Haven は NIP-50 (Search) に対応していますか？
+
+**A:** **現在 (v1.1.5) は対応していません。**
+
+- ❌ v1.1.5: NIP-50 未対応
+- 📅 v1.4.0: NIP-50 実装予定（Phase 3）
+
+**現在の状況**:
+- Haven はフルテキスト検索機能を持っていません
+- Amethyst の Search Relays に設定しても検索は動作しません
+- 標準的な Nostr フィルター（authors, kinds, tags, time range）は正常に動作します
+
+**推奨設定**:
+- **Search Relays には Haven を設定しない**
+- 代わりに以下の NIP-50 対応リレーを使用:
+  - `wss://relay.nostr.band` (Elasticsearch, 高速)
+  - `wss://nos.lol`
+  - `wss://relay.snort.social`
+
+**今後の実装計画**:
+- v1.4.0 で SQLite FTS5 を使用した高速検索を実装予定
+- Web Dashboard に検索 UI を追加予定
+- 実装完了後は Search Relays として使用可能
+
+詳細: [Haven NIP-50 対応状況ドキュメント](./haven_features_implementation_plan.md#今後の実装計画)
+
 ---
 
 ## トラブルシューティング
 
-### Q13: Haven サービスが起動しません
+### Q14: Haven サービスが起動しません
 
 **A:** 以下を確認：
 
@@ -157,7 +183,7 @@ start-cli service restart haven
 - ストレージ容量不足
 - データベース破損
 
-### Q14: .onion アドレスが取得できません
+### Q15: .onion アドレスが取得できません
 
 **A:** Tor Hidden Service の生成には時間がかかる場合があります：
 
@@ -173,7 +199,7 @@ start-cli service exec haven cat /var/lib/tor/haven/hostname
 
 再起動しても解決しない場合は、Haven を再インストールしてください。
 
-### Q15: Nostr クライアントから接続できません
+### Q16: Nostr クライアントから接続できません
 
 **A:** チェック項目：
 
@@ -192,7 +218,7 @@ start-cli service exec haven cat /var/lib/tor/haven/hostname
    - Private/Chat: 認証が必要（NIP-42）
    - クライアントが Auth をサポートしているか確認
 
-### Q16: メディアアップロードが失敗します
+### Q17: メディアアップロードが失敗します
 
 **A:** 確認事項：
 
@@ -211,7 +237,7 @@ start-cli service exec haven df -h /data/blossom
 # あなたの nsec で署名されているか（NIP-98）
 ```
 
-### Q17: データベースが破損しました
+### Q18: データベースが破損しました
 
 **A:** 復旧手順：
 
@@ -228,7 +254,7 @@ start-cli service start haven
 # 事前にバックアップを取ってください
 ```
 
-### Q18: メモリ使用量が多すぎます
+### Q19: メモリ使用量が多すぎます
 
 **A:** 最適化方法：
 
@@ -257,7 +283,7 @@ start-cli service start haven
 
 ## 開発者向け質問
 
-### Q19: Haven のコードをカスタマイズできますか？
+### Q20: Haven のコードをカスタマイズできますか？
 
 **A:** はい！Haven はオープンソース（MIT ライセンス）です：
 

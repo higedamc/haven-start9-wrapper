@@ -6,6 +6,47 @@ Haven を Start9 Server 用にパッケージ化するための完全なドキ�
 
 ---
 
+## 📖 新着ドキュメント
+
+### [Haven 機能仕様 & 実装計画書](./haven_features_implementation_plan.md) ⭐ NEW
+
+**対象**: 全員
+
+Haven の全機能を網羅した完全なリファレンスドキュメントです。
+
+**内容**:
+- 4つのリレー機能の詳細
+- Blossom メディアサーバー仕様
+- Web of Trust (WoT) 実装
+- Import / Blastr / Backup 機能
+- データベース設計
+- 全設定項目リファレンス
+
+**読むべきタイミング**: Haven の機能を理解したいとき
+
+**所要時間**: 60-90分
+
+---
+
+### [GUI 開発計画書](./gui_development_plan.md) ⭐ NEW
+
+**対象**: GUI 開発者
+
+Start9 LAUNCH UI で開く Web ダッシュボードの開発計画です。
+
+**内容**:
+- ダッシュボード画面設計
+- 6つのページ仕様 (Home, Stats, Logs, WoT, Blossom, Search)
+- API 設計
+- 実装計画 (Phase 1-3)
+- セキュリティ対策
+
+**読むべきタイミング**: GUI 実装を開始する前
+
+**所要時間**: 45-60分
+
+---
+
 ## 🚨 重要: リポジトリ移行
 
 Haven を Start9 用にパッケージ化する場合、**wrapper repository** として新しいリポジトリを作成することを強く推奨します。
@@ -23,7 +64,52 @@ cd /Users/apple/work/haven
 
 ## 🗂️ ドキュメント構成
 
-### 0. [移行ガイド](./MIGRATION-GUIDE.md) 🚨
+### 0. [Haven 機能仕様 & 実装計画書](./haven_features_implementation_plan.md) 📘 NEW
+
+**対象**: 全員（Haven の機能を理解したい人）
+
+Haven ができることの完全なリファレンスです。
+
+**内容**:
+- Haven 概要とアーキテクチャ
+- 4つのリレー機能の詳細仕様
+- Blossom メディアサーバー
+- Web of Trust (WoT) 実装
+- Import / Blastr / Backup 機能
+- データベース設計 (LMDB / BadgerDB)
+- 全設定項目リファレンス
+- Start9 統合状況
+- 今後の実装計画
+
+**読むべきタイミング**: Haven の全体像を把握したいとき
+
+**所要時間**: 60-90分
+
+---
+
+### 1. [GUI 開発計画書](./gui_development_plan.md) 🎨 NEW
+
+**対象**: GUI 開発者、プロジェクトマネージャー
+
+Start9 LAUNCH UI で開く Web ダッシュボードの開発計画です。
+
+**内容**:
+- 現状と課題分析
+- GUI アーキテクチャ設計
+- 6つのページ仕様 (Dashboard, Stats, Logs, WoT, Blossom, Search)
+- API 設計 (10+ エンドポイント)
+- 技術選択 (Pure HTML + Vanilla JS 推奨)
+- 実装計画 (Phase 1-3, 5週間)
+- セキュリティ対策
+- デプロイ戦略
+
+**読むべきタイミング**: GUI 実装を開始する前
+
+**所要時間**: 45-60分
+
+---
+
+### 2. [移行ガイド](./MIGRATION-GUIDE.md) 🚨
 
 **対象**: 全員（実装開始前に必読）
 
@@ -42,7 +128,7 @@ Haven リポジトリから haven-start9-wrapper への移行手順です。
 
 ---
 
-### 1. [実装計画書](./start9-packaging-plan.md) 📋
+### 3. [実装計画書](./start9-packaging-plan.md) 📋
 
 **対象**: プロジェクトマネージャー、リードエンジニア
 
@@ -62,7 +148,7 @@ Haven の Start9 パッケージング実装のマスタープランです。
 
 ---
 
-### 2. [技術仕様書](./start9-technical-spec.md) 📐
+### 4. [技術仕様書](./start9-technical-spec.md) 📐
 
 **対象**: エンジニア、アーキテクト
 
@@ -84,7 +170,7 @@ Haven の技術的な詳細を網羅した仕様書です。
 
 ---
 
-### 3. [実装チェックリスト](./start9-implementation-checklist.md) ✅
+### 5. [実装チェックリスト](./start9-implementation-checklist.md) ✅
 
 **対象**: 全エンジニア
 
@@ -103,7 +189,7 @@ Haven の技術的な詳細を網羅した仕様書です。
 
 ---
 
-### 4. [クイックスタートガイド](./start9-quickstart.md) 🚀
+### 6. [クイックスタートガイド](./start9-quickstart.md) 🚀
 
 **対象**: 開発者（初めて Haven に触れる人）
 
@@ -123,7 +209,7 @@ Haven Start9 パッケージングを今日から始めるためのガイドで�
 
 ---
 
-### 5. [FAQ](./start9-faq.md) ❓
+### 7. [FAQ](./start9-faq.md) ❓
 
 **対象**: 全員（開発者、ユーザー、サポート）
 
@@ -385,9 +471,9 @@ git diff docs/start9-packaging-plan.md
 | 項目 | 内容 |
 |-----|------|
 | **作成日** | 2025-12-24 |
-| **最終更新** | 2025-12-24 |
-| **ドキュメント数** | 5 |
-| **総ページ数** | ~100 |
+| **最終更新** | 2025-12-27 |
+| **ドキュメント数** | 7 (+ 2 NEW) |
+| **総ページ数** | ~200 |
 | **メンテナー** | Oracle + AI Assistant |
 | **ライセンス** | MIT |
 
