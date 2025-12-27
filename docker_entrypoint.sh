@@ -530,6 +530,27 @@ main() {
         fi
     done
     
+    # Create symlink from /app/db to /data/db for database persistence
+    # Haven stores databases in ./db/ (relative to /app), but we need them in /data/db
+    log_info "Setting up database symlink..."
+    if [ ! -L /app/db ] && [ ! -d /app/db ]; then
+        ln -sf /data/db /app/db
+        log_info "Created symlink: /app/db -> /data/db"
+    elif [ -L /app/db ]; then
+        log_debug "Database symlink already exists"
+    elif [ -d /app/db ] && [ ! -L /app/db ]; then
+        log_warn "/app/db exists as directory, not symlink. Migrating..."
+        # Backup old db if it exists
+        if [ "$(ls -A /app/db 2>/dev/null)" ]; then
+            mv /app/db /app/db.backup.$(date +%s)
+            log_info "Backed up old /app/db directory"
+        else
+            rm -rf /app/db
+        fi
+        ln -sf /data/db /app/db
+        log_info "Created symlink: /app/db -> /data/db"
+    fi
+    
     # Load configuration from Start9 (standard location)
     if [ -f /data/start9/config.yaml ]; then
         log_info "Loading configuration from Start9..."
