@@ -80,7 +80,7 @@ BLOSSOM_PATH=/data/blossom/
 RELAY_URL=${TOR_ADDRESS}
 RELAY_PORT=3355
 RELAY_BIND_ADDRESS=0.0.0.0
-RELAY_VERSION=${RELAY_VERSION:-1.1.5}
+RELAY_VERSION=${RELAY_VERSION:-1.2.0}
 
 # Private Relay Configuration
 PRIVATE_RELAY_NAME=${PRIVATE_RELAY_NAME:-Haven Private}
@@ -513,7 +513,7 @@ start_haven() {
 main() {
     log_info "=========================================="
     log_info "  Haven for Start9 Server"
-    log_info "  Version: ${RELAY_VERSION:-1.1.5}"
+    log_info "  Version: ${RELAY_VERSION:-1.2.0}"
     log_info "=========================================="
     log_info ""
     
@@ -559,7 +559,7 @@ main() {
         export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
         export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
         export LMDB_MAPSIZE=$(yq e '.lmdb-mapsize // ""' /data/start9/config.yaml)
-        export RELAY_VERSION=$(yq e '.relay-version // "1.1.5"' /data/start9/config.yaml)
+        export RELAY_VERSION=$(yq e '.relay-version // "1.2.0"' /data/start9/config.yaml)
         
         export PRIVATE_RELAY_NAME=$(yq e '.private-relay-name // "Haven Private"' /data/start9/config.yaml)
         export PRIVATE_RELAY_DESCRIPTION=$(yq e '.private-relay-description // "My private relay"' /data/start9/config.yaml)
