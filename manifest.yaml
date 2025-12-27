@@ -263,11 +263,9 @@ interfaces:
   main:
     name: Nostr Relay Interface
     description: Main Nostr relay endpoint (WebSocket) and Blossom media server
-    tor-config:
-      port-mapping:
-        "3355": "80"
+    tor-config: null
     lan-config: null
-    ui: true
+    ui: false
     protocols:
       - tcp
       - http

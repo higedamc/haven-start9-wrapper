@@ -6,12 +6,19 @@
 import { T } from "../deps.ts";
 
 export const properties: T.ExpectedExports.properties = async (effects) => {
-  // Read Tor address from file
+  // Read Tor address from the actual Tor hidden service directory
+  // This is the SOURCE OF TRUTH for the onion address
   let torAddress = "Generating...";
   try {
-    torAddress = (await Deno.readTextFile("/data/tor_address.txt")).trim();
+    // First try to read from Tor's hostname file (primary source)
+    torAddress = (await Deno.readTextFile("/data/tor/haven/hostname")).trim();
   } catch (_e) {
-    // File doesn't exist yet, use default
+    // Fallback to tor_address.txt if hostname doesn't exist yet
+    try {
+      torAddress = (await Deno.readTextFile("/data/tor_address.txt")).trim();
+    } catch (_e2) {
+      // File doesn't exist yet, use default
+    }
   }
 
   // Get database size
@@ -78,7 +85,7 @@ export const properties: T.ExpectedExports.properties = async (effects) => {
       data: {
         "Haven Version": {
           type: "string",
-          value: "1.0.6",
+          value: "1.1.6",
           description: "Current Haven version",
           copyable: false,
           qr: false,
@@ -98,6 +105,14 @@ export const properties: T.ExpectedExports.properties = async (effects) => {
           description: "Your .onion address (Hidden Service)",
           copyable: true,
           qr: true,
+          masked: false,
+        },
+        "Web Interface": {
+          type: "string",
+          value: `http://${torAddress}/`,
+          description: "Haven Web Interface (Dashboard)",
+          copyable: true,
+          qr: false,
           masked: false,
         },
         "Outbox Relay": {
