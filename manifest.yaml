@@ -166,6 +166,7 @@ main:
   args: []
   mounts:
     main: /data
+    ui-cert: /mnt/ui-cert
   gpu-acceleration: false
   shm-size-mb: null
 # ==============================================================================
@@ -256,24 +257,39 @@ properties:
 volumes:
   main:
     type: data
+  ui-cert:
+    type: certificate
+    interface-id: ui
 # ==============================================================================
 # Network Interfaces
 # ==============================================================================
 interfaces:
   main:
     name: Nostr Relay Interface
-    description: Main Nostr relay endpoint (WebSocket) and Blossom media server
+    description: Main Nostr relay endpoint (WebSocket) and Blossom media server via .onion
     tor-config:
       port-mapping:
         80: "3355"
     lan-config: null
-    ui: true
+    ui: false
     protocols:
       - tcp
       - http
       - ws
-  # Internal Tor management - Haven manages its own Tor instance
-  # The tor-config above tells Start9 where to route traffic within the container
+  ui:
+    name: Haven Web Interface
+    description: Web dashboard and management interface
+    tor-config:
+      port-mapping:
+        80: "3355"
+    lan-config:
+      443:
+        ssl: true
+        internal: 3355
+    ui: true
+    protocols:
+      - tcp
+      - http
 # ==============================================================================
 # Dependencies
 # ==============================================================================
