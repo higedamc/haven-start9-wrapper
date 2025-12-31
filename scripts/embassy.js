@@ -4178,9 +4178,32 @@ const setConfig1 = async (effects, newConfig)=>{
 };
 const health = {
     async main (effects, duration) {
-        return {
-            result: "OK"
-        };
+        const isStarting = duration < 60_000;
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(()=>controller.abort(), 5000);
+            const response = await fetch("http://localhost:3355/", {
+                method: "GET",
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (response.ok || response.status >= 300 && response.status < 400) {
+                return null;
+            } else {
+                if (isStarting) {
+                    return null;
+                } else {
+                    return `Haven returned HTTP ${response.status}`;
+                }
+            }
+        } catch (error) {
+            if (isStarting) {
+                return null;
+            } else {
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                return `Haven is not responding: ${errorMsg}`;
+            }
+        }
     }
 };
 export { getConfig1 as getConfig };

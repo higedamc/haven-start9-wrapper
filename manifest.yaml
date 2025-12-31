@@ -176,14 +176,7 @@ health-checks:
   main:
     name: Web Interface
     success-message: Haven is running and accessible
-    type: docker
-    image: main
-    entrypoint: check-web.sh
-    args: []
-    io-format: json
-    inject: false
-    mounts:
-      main: /data
+    type: script
 # ==============================================================================
 # Configuration Management
 # ==============================================================================
