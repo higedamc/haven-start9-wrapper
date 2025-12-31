@@ -559,7 +559,7 @@ main() {
         export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
         export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
         export LMDB_MAPSIZE=$(yq e '.lmdb-mapsize // ""' /data/start9/config.yaml)
-        export RELAY_VERSION=$(yq e '.relay-version // "1.2.0"' /data/start9/config.yaml)
+        export RELAY_VERSION="1.2.0"
         
         export PRIVATE_RELAY_NAME=$(yq e '.private-relay-name // "Haven Private"' /data/start9/config.yaml)
         export PRIVATE_RELAY_DESCRIPTION=$(yq e '.private-relay-description // "My private relay"' /data/start9/config.yaml)

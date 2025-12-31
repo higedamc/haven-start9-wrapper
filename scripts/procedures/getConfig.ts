@@ -33,14 +33,6 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "range": "[1024,102400]",
     "integral": true,
   },
-  "relay-version": {
-    "type": "string",
-    "name": "Relay Version",
-    "description": "Haven relay version string",
-    "nullable": false,
-    "default": "1.1.5",
-    "masked": false,
-  },
   "private-relay-name": {
     "type": "string",
     "name": "Private Relay Name",
