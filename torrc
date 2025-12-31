@@ -39,9 +39,11 @@ ClientOnly 0
 # ==============================================================================
 # Circuit and Rendezvous Reliability
 # ==============================================================================
-# Adaptive circuit build timeout (learns from network conditions - RECOMMENDED)
-# Tor will automatically adjust timeouts based on observed circuit build times
-LearnCircuitBuildTimeout 1
+# Fixed circuit build timeout (30 seconds)
+# IMPORTANT: This value was tested and works for your network environment.
+# Adaptive learning (LearnCircuitBuildTimeout 1) caused instability in your case.
+CircuitBuildTimeout 30
+LearnCircuitBuildTimeout 0
 
 # Increase max pending circuits for high-traffic hidden service
 # Default: 32, High-traffic: 128-256, Extreme: 1024
