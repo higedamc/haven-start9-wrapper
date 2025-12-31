@@ -191,5 +191,4 @@ MIT License - See [LICENSE](LICENSE)
 ## Support
 
 - GitHub Issues: https://github.com/higedamc/haven-start9-wrapper/issues
-- Start9 Community: https://community.start9.com
-- Nostr: @bitvora
+- Nostr: @npub16lrdq99ng2q4hg5ufre5f8j0qpealp8544vq4ctn2wqyrf4tk6uqn8mfeq
