@@ -83,14 +83,6 @@ export const properties: T.ExpectedExports.properties = async (effects) => {
     result: {
       version: 2,
       data: {
-        "Haven Version": {
-          type: "string",
-          value: "1.1.6",
-          description: "Current Haven version",
-          copyable: false,
-          qr: false,
-          masked: false,
-        },
         "Service Status": {
           type: "string",
           value: "Running",
