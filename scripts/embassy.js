@@ -4096,33 +4096,6 @@ const getConfig1 = mod3.getConfig({
         "range": "[3600,604800]",
         "integral": true
     },
-    "backup-enabled": {
-        "type": "boolean",
-        "name": "Enable Cloud Backups",
-        "description": "Automatically backup database to cloud storage",
-        "default": false
-    },
-    "backup-provider": {
-        "type": "enum",
-        "name": "Backup Provider",
-        "description": "Choose cloud backup service",
-        "values": [
-            "none",
-            "s3",
-            "digitalocean",
-            "backblaze"
-        ],
-        "default": "none"
-    },
-    "backup-interval": {
-        "type": "number",
-        "name": "Backup Interval (hours)",
-        "description": "How often to run backups (in hours)",
-        "nullable": false,
-        "default": 24,
-        "range": "[1,168]",
-        "integral": true
-    },
     "log-level": {
         "type": "enum",
         "name": "Log Level",
