@@ -21,14 +21,43 @@ CookieAuthentication 0
 # Increase number of entry guards for better reliability
 NumEntryGuards 8
 
-# Circuit build timeout (30 seconds)
-CircuitBuildTimeout 30
-
 # Log Configuration
 Log notice stdout
 
 # Disable client functionality (hidden service only)
 ClientOnly 0
+
+# ==============================================================================
+# Compression Bomb Handling
+# ==============================================================================
+# NOTE: Compression bomb warnings are NORMAL defensive behavior in Tor.
+# The warnings indicate Tor is correctly detecting and blocking suspicious
+# high-compression-ratio data. No configuration change is needed or possible
+# (CompressionLevel is not user-configurable in modern Tor versions).
+# Ref: https://forum.torproject.org/t/possible-compression-bomb-on-tor-logs/16055
+
+# ==============================================================================
+# Circuit and Rendezvous Reliability
+# ==============================================================================
+# Fixed circuit build timeout (30 seconds)
+# IMPORTANT: This value was tested and works for your network environment.
+# Adaptive learning (LearnCircuitBuildTimeout 1) caused instability in your case.
+CircuitBuildTimeout 30
+LearnCircuitBuildTimeout 0
+
+# Increase max pending circuits for high-traffic hidden service
+# Default: 32, High-traffic: 128-256, Extreme: 1024
+# Ref: https://man.archlinux.org/man/tor.1.en
+MaxClientCircuitsPending 128
+
+# Increase introduction points for better availability
+# Default: 3, Recommended: 3-5, High-traffic: 5-7 (>10 unnecessary)
+# Ref: https://support.tools/tor-hidden-service-deployment-security-guide/
+HiddenServiceNumIntroductionPoints 5
+
+# Circuit reuse timeout (default 600s = 10min)
+# High-performance configs use 7200s (2hr) but we keep default for balance
+MaxCircuitDirtiness 600
 
 # ==============================================================================
 # IPv6 Support for Blastr Relay Broadcasting

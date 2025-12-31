@@ -303,10 +303,44 @@ help:
 	@echo "  make submodule-init - Initialize Haven submodule"
 	@echo "  make submodule-update - Update Haven submodule"
 	@echo ""
+	@echo "Version Management:"
+	@echo "  make bump-patch     - Bump patch version (X.Y.Z → X.Y.Z+1)"
+	@echo "  make bump-minor     - Bump minor version (X.Y.Z → X.Y+1.0)"
+	@echo "  make bump-major     - Bump major version (X.Y.Z → X+1.0.0)"
+	@echo "  make bump-version   - Interactive version bump"
+	@echo ""
 	@echo "Info:"
 	@echo "  Package ID: $(PACKAGE_ID)"
 	@echo "  Version:    $(VERSION)"
 	@echo "  Architectures: $(ARCHITECTURES)"
+
+# ==============================================================================
+# Version Management
+# ==============================================================================
+
+.PHONY: bump-patch bump-minor bump-major bump-version version-check
+
+bump-patch:
+	@echo "🔢 Bumping patch version..."
+	@./scripts/bump-version.sh patch
+
+bump-minor:
+	@echo "🔢 Bumping minor version..."
+	@./scripts/bump-version.sh minor
+
+bump-major:
+	@echo "🔢 Bumping major version..."
+	@./scripts/bump-version.sh major
+
+bump-version:
+	@echo "🔢 Interactive version bump..."
+	@./scripts/bump-version.sh
+
+version-check:
+	@echo "Current version: $(VERSION)"
+	@echo ""
+	@echo "Checking version consistency..."
+	@grep -h "$(VERSION)" manifest.yaml docker_entrypoint.sh scripts/procedures/importNotes.sh 2>/dev/null | head -10 || true
 
 # ==============================================================================
 # Phony Targets Declaration
@@ -314,5 +348,6 @@ help:
 
 .PHONY: all build verify install test test-docker dev-build dev-run dev-shell \
         icon scripts clean clean-all release changelog docs submodule-init \
-        submodule-update help
+        submodule-update bump-patch bump-minor bump-major bump-version \
+        version-check help
 

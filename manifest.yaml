@@ -4,101 +4,131 @@
 
 id: haven
 title: Haven
-version: 1.1.5
+version: 1.2.0
 ui: false
 release-notes: |
+  **v1.1.6 - Database Dashboard (2025-12-27)**
+
+  New Features:
+  - **Database Dashboard**: Web interface to view stored Nostr events by kind
+  - **Event Statistics**: See total event counts and breakdown by database (private/chat/outbox/inbox)
+  - **JSON Event Viewer**: Click any kind card to view raw event data in formatted JSON
+  - **Kind Descriptions**: Human-readable descriptions for common Nostr event kinds
+
+  API Endpoints:
+  - Added `GET /api/stats` - Returns event statistics grouped by kind and database
+  - Added `GET /api/events/{kind}?db={database}` - Returns events filtered by kind and database
+  - Added `GET /dashboard` - Serves the dashboard web interface
+
+  UI Improvements:
+  - Added dashboard access button on main landing page
+  - Responsive design with Tailwind CSS
+  - Loading indicators and error handling
+
+  Use Cases:
+  - Verify database persistence after container restarts
+  - Debug import functionality and confirm imported events
+  - Monitor relay activity and event types
+  - Inspect event content for troubleshooting
+
+  Documentation:
+  - Added Database Dashboard documentation (docs/database-dashboard.md)
+  - Added Dashboard Testing Guide (docs/dashboard-testing-guide.md)
+  - Added Implementation Summary
+
+  ---
   **v1.1.5 - Import Notes Feature (2025-12-27)**
-  
+
   New Features:
   - **Manual Import Action**: Import your past notes and mentions from external relays
   - **Import Timeout Configuration**: Customize timeout values for owner notes (10-300s) and tagged notes (30-600s)
   - **Detailed Progress Logging**: Real-time progress tracking with batch numbers, ETAs, and statistics
   - **Import Summary Report**: Comprehensive report with total notes imported, duration, and storage locations
-  
+
   Improvements:
   - Enhanced import relay configuration with detailed validation
   - Colored log output for better readability
   - Progress percentage and estimated completion time
   - Separate log files for each import session (`/data/logs/import-*.log`)
   - Failed note tracking and reporting
-  
+
   Configuration:
   - Added `import-owner-notes-timeout` (default: 30s)
   - Added `import-tagged-notes-timeout` (default: 120s)
   - Added `import-query-interval` (default: 360000s)
   - Import seed relays now support both CSV format and JSON arrays
-  
+
   **v1.1.4 - Blastr Timeout Optimization (2025-12-25)**
-  
+
   Improvements:
   - **Extended Blastr Timeout**: Increased connection timeout from 5s to 15s
   - Better reliability for Tor-based relay connections
   - Reduced timeout errors for slow or distant relays
   - Improved IPv6-only relay connectivity
-  
+
   **v1.1.3 - IPv6 Support for Blastr (2025-12-25)**
-  
+
   New Features:
   - **IPv6 Support**: Blastr can now broadcast to IPv6-only relays
   - Tor configured to use IPv6 for outbound connections
   - Go's default HTTP client provides IPv6 support via Happy Eyeballs v2
   - IPv6 connectivity check on startup
-  
+
   Technical Improvements:
   - Added ClientUseIPv6, ClientPreferIPv6ORPort, and IPv6Exit to torrc
   - IPv6 automatically preferred with 300ms fallback to IPv4 (RFC 8305)
   - Added iputils and iproute2 packages for IPv6 diagnostics
   - Startup logs now show IPv6 availability status
-  
+
   **v1.1.2 - Blastr Debug Logging (2025-12-25)**
-  
+
   Debug Improvements:
   - Added extensive debug logging for Blastr relay configuration
   - Shows config file reading process step-by-step
   - Displays yq and jq exit codes and outputs
   - Helps identify configuration issues
-  
+
   **v1.1.1 - Critical Blastr Hotfix (2025-12-25)**
-  
+
   CRITICAL Bug Fixes:
   - **BREAKING FIX**: Fixed Blastr relay list parsing that caused Haven to fail on startup
   - Simplified relay list initialization to use more reliable jq-based parsing
   - Added proper error handling and fallback to empty relay list
   - Fixed Properties display to show Blastr relay count
   - Improved logging for Blastr configuration
-  
+
   **v1.1.0 - Blastr Relay Feature (2025-12-26)**
-  
+
   New Features:
   - **Blastr Relay Broadcasting**: Events posted to Haven are now automatically forwarded to external relays
   - Configure Blastr relay list from Start9 UI (comma-separated relay URLs)
   - Default relay list includes popular Nostr relays (relay.damus.io, nos.lol, relay.nostr.band, etc.)
   - Support for both domain-only format (relay.damus.io) and full WebSocket URLs (wss://relay.damus.io)
-  
+
   Improvements:
   - Added relay URL validation in configuration
   - Enhanced logging for Blastr relay operations
   - Relay count now displayed in logs (e.g., "blasted ... to 8 relays")
-  
+
   **v1.0.8 - Critical Tor Address Persistence Fix (2025-12-25)**
-  
+
   CRITICAL Bug Fixes:
   - **BREAKING FIX**: Tor Hidden Service directory now persists to /data/tor/haven/ (prevents .onion address from changing on updates)
   - This fix ensures your .onion address remains the same across package updates and restarts
   - Note: If you already updated to 1.0.7, your .onion address will change one more time with this update, but will then remain stable
-  
+
   **v1.0.7 - Blossom Server Hotfix (2025-12-25)**
-  
+
   Bug Fixes:
   - Fixed Blossom file storage path issue (media files now correctly saved to /data/blossom/)
   - Changed all relay ServiceURLs from https:// to http:// for proper Tor .onion address compatibility
   - Added detailed error logging for Blossom file operations (create, read, delete)
   - Fixed BlossomPath configuration to prevent trailing slash issues
-  
+
   Improvements:
   - Enhanced Blossom server initialization logging for easier debugging
   - Improved error messages for media upload/download operations
-  
+
   **v1.0.6 - Initial Release**
   - Initial Start9 release
   - Tor-only operation for maximum privacy
@@ -112,52 +142,23 @@ upstream-repo: https://github.com/bitvora/haven
 support-site: https://github.com/bitvora/haven/issues
 marketing-site: https://github.com/bitvora/haven
 donation-url: null
-
 # ==============================================================================
 # Package Description
 # ==============================================================================
-
 description:
   short: Self-sovereign Nostr relay suite with Blossom media server
-  long: |
-    Haven (High Availability Vault for Events on Nostr) is a comprehensive 
-    personal Nostr relay implementation featuring four specialized relays 
-    and an integrated Blossom media server. Run your own sovereign 
-    communications infrastructure over Tor.
-    
-    **Features:**
-    - **Private Relay**: Your personal secure storage for drafts and private notes
-    - **Chat Relay**: Web of Trust protected direct messages (NIP-04)
-    - **Inbox Relay**: Receive tagged events from trusted sources
-    - **Outbox Relay**: Public broadcast of your events
-    - **Blossom Server**: Decentralized media hosting (NIP-96 & BUD-02 compliant)
-    - **Web of Trust**: Automatic spam protection based on your social graph
-    - **Tor-Only**: Maximum privacy with .onion addresses
-    - **Multiple DB Engines**: Choose between BadgerDB or LMDB
-    - **Cloud Backups**: Optional S3-compatible backup integration
-    
-    **Compatible Clients:**
-    - Amethyst (Android) - Full support including Blossom
-    - Damus (iOS)
-    - Primal
-    - Coracle
-    - nostrudel
-    - And any Nostr client supporting NIP-42 (Auth)
-
+  long: "Haven (High Availability Vault for Events on Nostr) is a comprehensive \npersonal Nostr relay implementation featuring four specialized relays \nand an integrated Blossom media server. Run your own sovereign \ncommunications infrastructure over Tor.\n\n**Features:**\n- **Private Relay**: Your personal secure storage for drafts and private notes\n- **Chat Relay**: Web of Trust protected direct messages (NIP-04)\n- **Inbox Relay**: Receive tagged events from trusted sources\n- **Outbox Relay**: Public broadcast of your events\n- **Blossom Server**: Decentralized media hosting (NIP-96 & BUD-02 compliant)\n- **Web of Trust**: Automatic spam protection based on your social graph\n- **Tor-Only**: Maximum privacy with .onion addresses\n- **Multiple DB Engines**: Choose between BadgerDB or LMDB\n- **Cloud Backups**: Optional S3-compatible backup integration\n\n**Compatible Clients:**\n- Amethyst (Android) - Full support including Blossom\n- Damus (iOS)\n- Primal\n- Coracle\n- nostrudel\n- And any Nostr client supporting NIP-42 (Auth)\n"
 # ==============================================================================
 # Package Assets
 # ==============================================================================
-
 assets:
   license: LICENSE
   icon: icon.png
   instructions: instructions.md
   docker-images: docker-images.tar
-
 # ==============================================================================
 # Main Container Configuration
 # ==============================================================================
-
 main:
   type: docker
   image: main
@@ -165,13 +166,12 @@ main:
   args: []
   mounts:
     main: /data
+    ui-cert: /mnt/ui-cert
   gpu-acceleration: false
   shm-size-mb: null
-
 # ==============================================================================
 # Health Checks
 # ==============================================================================
-
 health-checks:
   main:
     name: Web Interface
@@ -184,27 +184,23 @@ health-checks:
     inject: false
     mounts:
       main: /data
-
 # ==============================================================================
 # Configuration Management
 # ==============================================================================
-
 config:
   get:
     type: script
   set:
     type: script
-
 # ==============================================================================
 # Actions
 # ==============================================================================
-
 actions:
   import-notes:
     name: Import Past Notes
     description: |
       Configure Haven to import your past notes and mentions on next restart.
-      
+
       **How it works:**
       1. This action validates your import configuration
       2. Creates an import request flag
@@ -213,23 +209,23 @@ actions:
          - All your notes from the specified start date
          - Notes that mention you (replies, reactions, zaps, etc.)
       5. After import completes, Haven automatically restarts in normal mode
-      
+
       **Time required:**
       - Several minutes to hours depending on amount of data
       - You can monitor progress in Haven's logs during import
-      
+
       **Before using:**
       - Configure "Import Start Date" (e.g., 2024-01-01)
       - Configure "Import Seed Relays" (comma-separated URLs)
       - Optionally adjust timeout values
     warning: |
       ⚠️ IMPORTANT: After running this action, you MUST restart Haven!
-      
+
       The import can take a long time:
       - 3 months of data: 5-15 minutes
       - 1 year of data: 15-45 minutes
       - 2+ years of data: 45 minutes - 2 hours
-      
+
       Do NOT stop Haven during the import as it may leave incomplete data.
       Check the logs to monitor import progress.
     allowed-statuses:
@@ -243,11 +239,9 @@ actions:
       mounts:
         main: /data
       io-format: json
-
 # ==============================================================================
 # Properties Display
 # ==============================================================================
-
 properties:
   type: docker
   image: main
@@ -257,43 +251,52 @@ properties:
     main: /data
   io-format: yaml
   inject: false
-
 # ==============================================================================
 # Volume Configuration
 # ==============================================================================
-
 volumes:
   main:
     type: data
-
+  ui-cert:
+    type: certificate
+    interface-id: ui
 # ==============================================================================
 # Network Interfaces
 # ==============================================================================
-
 interfaces:
   main:
     name: Nostr Relay Interface
-    description: Main Nostr relay endpoint (WebSocket) and Blossom media server
+    description: Main Nostr relay endpoint (WebSocket) and Blossom media server via .onion
     tor-config:
       port-mapping:
-        "3355": "80"
+        80: "3355"
     lan-config: null
-    ui: true
+    ui: false
     protocols:
       - tcp
       - http
       - ws
-
+  ui:
+    name: Haven Web Interface
+    description: Web dashboard and management interface
+    tor-config:
+      port-mapping:
+        80: "3355"
+    lan-config:
+      443:
+        ssl: true
+        internal: 3355
+    ui: true
+    protocols:
+      - tcp
+      - http
 # ==============================================================================
 # Dependencies
 # ==============================================================================
-
 dependencies: {}
-
 # ==============================================================================
 # Backup Configuration
 # ==============================================================================
-
 backup:
   create:
     type: docker
@@ -321,12 +324,9 @@ backup:
     mounts:
       BACKUP: /mnt/backup
       main: /data
-
 # ==============================================================================
 # Migrations
 # ==============================================================================
-
 migrations:
   from: {}
   to: {}
-

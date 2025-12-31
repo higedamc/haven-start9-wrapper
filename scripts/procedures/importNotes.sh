@@ -262,7 +262,7 @@ export RUN_IMPORT=true
 # Load other necessary environment variables from config
 export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
 export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
-export RELAY_VERSION=$(yq e '.relay-version // "1.1.5"' /data/start9/config.yaml)
+export RELAY_VERSION=$(yq e '.relay-version // "1.2.0"' /data/start9/config.yaml)
 export LOG_LEVEL=$(yq e '.log-level // "INFO"' /data/start9/config.yaml)
 
 # Read Tor address
@@ -281,7 +281,7 @@ BLOSSOM_PATH=/data/blossom/
 RELAY_URL=${TOR_ADDRESS}
 RELAY_PORT=3355
 RELAY_BIND_ADDRESS=0.0.0.0
-RELAY_VERSION=${RELAY_VERSION:-1.1.5}
+RELAY_VERSION=${RELAY_VERSION:-1.2.0}
 IMPORT_START_DATE=${IMPORT_START_DATE}
 IMPORT_OWNER_NOTES_FETCH_TIMEOUT_SECONDS=${IMPORT_OWNER_NOTES_TIMEOUT}
 IMPORT_TAGGED_NOTES_FETCH_TIMEOUT_SECONDS=${IMPORT_TAGGED_NOTES_TIMEOUT}
