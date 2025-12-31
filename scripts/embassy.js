@@ -4176,17 +4176,21 @@ const setConfig1 = async (effects, newConfig)=>{
     }
     return mod3.setConfig(effects, newConfig);
 };
+function timeout(ms) {
+    return new Promise((_, reject)=>{
+        setTimeout(()=>reject(new Error("Timeout")), ms);
+    });
+}
 const health = {
     async main (effects, duration) {
         const isStarting = duration < 60_000;
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(()=>controller.abort(), 5000);
-            const response = await fetch("http://localhost:3355/", {
-                method: "GET",
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+            const response = await Promise.race([
+                fetch("http://localhost:3355/", {
+                    method: "GET"
+                }),
+                timeout(5000)
+            ]);
             if (response.ok || response.status >= 300 && response.status < 400) {
                 return null;
             } else {
