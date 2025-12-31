@@ -47,6 +47,9 @@ See: [Database Dashboard Documentation](docs/database-dashboard.md)
 - SHA-256 based content addressing
 - Integrated with your Nostr identity
 
+### 🚧 Upcoming Features (v1.3.0)
+- **☁️ Cloud Backups**: Automatic database backups to S3-compatible storage (Coming in v1.3.0)
+
 ## 🔐 Privacy & Security
 
 ### Tor-Only Operation

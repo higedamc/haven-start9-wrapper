@@ -18,7 +18,7 @@ Haven の全機能を網羅した完全なリファレンスドキュメント�
 - 4つのリレー機能の詳細
 - Blossom メディアサーバー仕様
 - Web of Trust (WoT) 実装
-- Import / Blastr / Backup 機能
+- Import / Blastr 機能 (Cloud Backup: v1.3.0で実装予定)
 - データベース設計
 - 全設定項目リファレンス
 
@@ -75,7 +75,7 @@ Haven ができることの完全なリファレンスです。
 - 4つのリレー機能の詳細仕様
 - Blossom メディアサーバー
 - Web of Trust (WoT) 実装
-- Import / Blastr / Backup 機能
+- Import / Blastr 機能 (Cloud Backup: v1.3.0で実装予定)
 - データベース設計 (LMDB / BadgerDB)
 - 全設定項目リファレンス
 - Start9 統合状況
