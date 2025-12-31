@@ -71,15 +71,15 @@ Most modern Nostr clients support Tor connections:
 **Your Relay URLs:**
 After installation, you'll receive `.onion` addresses for each relay:
 ```
-wss://your-address.onion/private
-wss://your-address.onion/chat
-wss://your-address.onion/inbox
-wss://your-address.onion/outbox
+ws://your-address.onion/private
+ws://your-address.onion/chat
+ws://your-address.onion/inbox
+ws://your-address.onion
 ```
 
 **Blossom Media Server:**
 ```
-https://your-address.onion/
+http://your-address.onion/
 ```
 
 #### Client Configuration:
