@@ -4176,28 +4176,44 @@ const setConfig1 = async (effects, newConfig)=>{
     }
     return mod3.setConfig(effects, newConfig);
 };
-function timeout(ms) {
-    return new Promise((_, reject)=>{
-        setTimeout(()=>reject(new Error("Timeout")), ms);
-    });
-}
 const health = {
     async main (effects, duration) {
         const isStarting = duration < 60_000;
         try {
-            const response = await Promise.race([
-                fetch("http://localhost:3355/", {
-                    method: "GET"
-                }),
-                timeout(5000)
-            ]);
-            if (response.ok || response.status >= 300 && response.status < 400) {
-                return null;
+            const process = Deno.run({
+                cmd: [
+                    "curl",
+                    "-sf",
+                    "-o",
+                    "/dev/null",
+                    "-w",
+                    "%{http_code}",
+                    "--max-time",
+                    "5",
+                    "http://localhost:3355/"
+                ],
+                stdout: "piped",
+                stderr: "piped"
+            });
+            const status = await process.status();
+            const output = new TextDecoder().decode(await process.output());
+            process.close();
+            if (status.success) {
+                const httpCode = parseInt(output);
+                if (httpCode >= 200 && httpCode < 400) {
+                    return null;
+                } else {
+                    if (isStarting) {
+                        return null;
+                    } else {
+                        return `Haven returned HTTP ${httpCode}`;
+                    }
+                }
             } else {
                 if (isStarting) {
                     return null;
                 } else {
-                    return `Haven returned HTTP ${response.status}`;
+                    return "Haven is not responding";
                 }
             }
         } catch (error) {
@@ -4205,7 +4221,7 @@ const health = {
                 return null;
             } else {
                 const errorMsg = error instanceof Error ? error.message : String(error);
-                return `Haven is not responding: ${errorMsg}`;
+                return `Health check error: ${errorMsg}`;
             }
         }
     }
