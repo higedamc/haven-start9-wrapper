@@ -47,6 +47,63 @@ See: [Database Dashboard Documentation](docs/database-dashboard.md)
 - SHA-256 based content addressing
 - Integrated with your Nostr identity
 
+## 🔐 Privacy & Security
+
+### Tor-Only Operation
+
+**Haven on Start9 operates exclusively over Tor** for maximum privacy and security.
+
+#### What This Means:
+- **No Clearnet Access**: Haven is only accessible via `.onion` addresses
+- **Complete Privacy**: Your relay location and IP address are protected
+- **Censorship Resistance**: Tor network provides resistance to blocking and surveillance
+- **Encrypted by Default**: All connections are encrypted through the Tor network
+
+#### Accessing Your Haven Relay:
+
+**From Nostr Clients:**
+Most modern Nostr clients support Tor connections:
+- **Android**: Use Amethyst with Orbot (Tor proxy)
+- **iOS**: Use Damus with Orbot iOS
+- **Desktop**: Use nostrudel, Coracle, or any client with Tor support
+- **Web**: Access through Tor Browser
+
+**Your Relay URLs:**
+After installation, you'll receive `.onion` addresses for each relay:
+```
+wss://your-address.onion/private
+wss://your-address.onion/chat
+wss://your-address.onion/inbox
+wss://your-address.onion/outbox
+```
+
+**Blossom Media Server:**
+```
+https://your-address.onion/
+```
+
+#### Client Configuration:
+
+1. **Enable Tor** on your device (Orbot for mobile, Tor Browser for desktop)
+2. **Configure your Nostr client** to use Tor proxy (usually SOCKS5 on `127.0.0.1:9050`)
+3. **Add your Haven relay** using the `.onion` address from Start9 Properties
+4. **Authenticate** using NIP-42 (your client will handle this automatically)
+
+#### Why Tor-Only?
+
+- **Self-Sovereignty**: True ownership of your data without exposing your location
+- **Privacy-First**: No metadata leakage about your relay's physical location
+- **Security**: Protection against DDoS attacks and targeted harassment
+- **Perfect for Personal Relays**: Your relay serves you and your web of trust, not the entire world
+
+#### Trade-offs:
+
+- **Slower connections**: Tor adds latency (typically 1-3 seconds)
+- **Client compatibility**: Requires Tor-capable Nostr clients
+- **Initial setup**: Need to configure Tor proxy on your devices
+
+For most personal relay use cases, the privacy benefits far outweigh these minor inconveniences.
+
 ## Documentation
 
 - [📚 Documentation Index](docs/START9-INDEX.md)
@@ -62,7 +119,7 @@ See: [Database Dashboard Documentation](docs/database-dashboard.md)
 
 ```bash
 # Clone with submodules
-git clone --recurse-submodules https://github.com/YOUR_USERNAME/haven-start9-wrapper.git
+git clone --recurse-submodules https://github.com/higedamc/haven-start9-wrapper.git
 cd haven-start9-wrapper
 
 # Install dependencies
@@ -130,6 +187,6 @@ MIT License - See [LICENSE](LICENSE)
 
 ## Support
 
-- GitHub Issues: https://github.com/YOUR_USERNAME/haven-start9-wrapper/issues
+- GitHub Issues: https://github.com/higedamc/haven-start9-wrapper/issues
 - Start9 Community: https://community.start9.com
 - Nostr: @bitvora
