@@ -4,9 +4,28 @@
 
 id: haven
 title: Haven
-version: 1.2.0
+version: 1.2.3
 ui: false
 release-notes: |
+  **v1.2.3 - Metadata Fix (2025-01-01)**
+
+  Changes:
+  - Fixed wrapper repository URL
+  - Updated support site to wrapper issues
+  - Added Lightning donation address
+
+  ---
+
+  **v1.2.2 - Release Ready (2025-01-01)**
+
+  Changes:
+  - Restored official Haven icon
+  - All GitHub issues resolved
+  - Cloud backup functionality postponed to v1.3.0
+  - Ready for Start9 Community Registry
+
+  ---
+
   **v1.1.6 - Database Dashboard (2025-12-27)**
 
   New Features:
@@ -137,11 +156,11 @@ release-notes: |
   - Four specialized Nostr relays (Private, Chat, Inbox, Outbox)
   - BadgerDB and LMDB database engine support
 license: MIT
-wrapper-repo: https://github.com/bitvora/haven-start9-wrapper
+wrapper-repo: https://github.com/higedamc/haven-start9-wrapper
 upstream-repo: https://github.com/bitvora/haven
-support-site: https://github.com/bitvora/haven/issues
+support-site: https://github.com/higedamc/haven-start9-wrapper/issues
 marketing-site: https://github.com/bitvora/haven
-donation-url: null
+donation-url: https://getalby.com/p/godzhigella
 # ==============================================================================
 # Package Description
 # ==============================================================================

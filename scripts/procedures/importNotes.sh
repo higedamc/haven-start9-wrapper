@@ -262,7 +262,7 @@ export RUN_IMPORT=true
 # Load other necessary environment variables from config
 export OWNER_NPUB=$(yq e '.owner-npub' /data/start9/config.yaml)
 export DB_ENGINE=$(yq e '.db-engine // "badger"' /data/start9/config.yaml)
-export RELAY_VERSION="1.2.0"
+export RELAY_VERSION="1.2.3"
 export LOG_LEVEL=$(yq e '.log-level // "INFO"' /data/start9/config.yaml)
 
 # Read Tor address
