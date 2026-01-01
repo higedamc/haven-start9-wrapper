@@ -1,7 +1,0 @@
-.env/
-*.s9pk
-synapse-vps.tar
-.vscode/
-.DS_Store
-scripts/*.js
-docker-images
