@@ -110,6 +110,23 @@ INBOX_RELAY_DESCRIPTION=${INBOX_RELAY_DESCRIPTION:-My inbox relay}
 INBOX_RELAY_ICON=${INBOX_RELAY_ICON:-}
 INBOX_PULL_INTERVAL_SECONDS=${INBOX_PULL_INTERVAL_SECONDS:-3600}
 
+# Event Size Limits (in bytes)
+PRIVATE_RELAY_MAX_EVENT_SIZE=${PRIVATE_RELAY_MAX_EVENT_SIZE:-131072}
+CHAT_RELAY_MAX_EVENT_SIZE=${CHAT_RELAY_MAX_EVENT_SIZE:-131072}
+OUTBOX_RELAY_MAX_EVENT_SIZE=${OUTBOX_RELAY_MAX_EVENT_SIZE:-131072}
+INBOX_RELAY_MAX_EVENT_SIZE=${INBOX_RELAY_MAX_EVENT_SIZE:-131072}
+
+# Kind-Specific Event Size Limits
+PRIVATE_RELAY_ENABLE_KIND_SPECIFIC_LIMITS=${ENABLE_KIND_SPECIFIC_LIMITS:-true}
+CHAT_RELAY_ENABLE_KIND_SPECIFIC_LIMITS=false
+OUTBOX_RELAY_ENABLE_KIND_SPECIFIC_LIMITS=${ENABLE_KIND_SPECIFIC_LIMITS:-true}
+INBOX_RELAY_ENABLE_KIND_SPECIFIC_LIMITS=${ENABLE_KIND_SPECIFIC_LIMITS:-true}
+
+PRIVATE_RELAY_MAX_LONG_FORM_SIZE=${MAX_LONG_FORM_CONTENT_SIZE:-1048576}
+CHAT_RELAY_MAX_LONG_FORM_SIZE=${MAX_LONG_FORM_CONTENT_SIZE:-1048576}
+OUTBOX_RELAY_MAX_LONG_FORM_SIZE=${MAX_LONG_FORM_CONTENT_SIZE:-1048576}
+INBOX_RELAY_MAX_LONG_FORM_SIZE=${MAX_LONG_FORM_CONTENT_SIZE:-1048576}
+
 # Import Settings
 IMPORT_START_DATE=${IMPORT_START_DATE:-}
 IMPORT_OWNER_NOTES_FETCH_TIMEOUT_SECONDS=${IMPORT_OWNER_NOTES_TIMEOUT:-30}
@@ -576,6 +593,24 @@ main() {
         export INBOX_RELAY_NAME=$(yq e '.inbox-relay-name // "Haven Inbox"' /data/start9/config.yaml)
         export INBOX_RELAY_DESCRIPTION=$(yq e '.inbox-relay-description // "My inbox relay"' /data/start9/config.yaml)
         export INBOX_PULL_INTERVAL_SECONDS=$(yq e '.inbox-pull-interval // "3600"' /data/start9/config.yaml)
+        
+        # Max Event Sizes (convert from KB to bytes)
+        PRIVATE_MAX_KB=$(yq e '.private-relay-max-event-size // "128"' /data/start9/config.yaml)
+        export PRIVATE_RELAY_MAX_EVENT_SIZE=$((PRIVATE_MAX_KB * 1024))
+        
+        CHAT_MAX_KB=$(yq e '.chat-relay-max-event-size // "128"' /data/start9/config.yaml)
+        export CHAT_RELAY_MAX_EVENT_SIZE=$((CHAT_MAX_KB * 1024))
+        
+        OUTBOX_MAX_KB=$(yq e '.outbox-relay-max-event-size // "128"' /data/start9/config.yaml)
+        export OUTBOX_RELAY_MAX_EVENT_SIZE=$((OUTBOX_MAX_KB * 1024))
+        
+        INBOX_MAX_KB=$(yq e '.inbox-relay-max-event-size // "128"' /data/start9/config.yaml)
+        export INBOX_RELAY_MAX_EVENT_SIZE=$((INBOX_MAX_KB * 1024))
+        
+        # Kind-Specific Size Limits
+        export ENABLE_KIND_SPECIFIC_LIMITS=$(yq e '.enable-kind-specific-limits // "true"' /data/start9/config.yaml)
+        LONG_FORM_MAX_KB=$(yq e '.max-long-form-content-size // "1024"' /data/start9/config.yaml)
+        export MAX_LONG_FORM_CONTENT_SIZE=$((LONG_FORM_MAX_KB * 1024))
         
         export IMPORT_START_DATE=$(yq e '.import-start-date // ""' /data/start9/config.yaml)
         export IMPORT_SEED_RELAYS=$(yq e '.import-seed-relays // ""' /data/start9/config.yaml)
