@@ -53,6 +53,24 @@ export INBOX_RELAY_NAME="$(echo "$CONFIG" | yq '.inbox-relay-name // "Haven Inbo
 export INBOX_RELAY_DESCRIPTION="$(echo "$CONFIG" | yq '.inbox-relay-description // "My inbox relay"')"
 export INBOX_PULL_INTERVAL_SECONDS="$(echo "$CONFIG" | yq '.inbox-pull-interval // "3600"')"
 
+# Max Event Sizes (convert KB to bytes by multiplying by 1024)
+PRIVATE_MAX_KB="$(echo "$CONFIG" | yq '.private-relay-max-event-size // "128"')"
+export PRIVATE_RELAY_MAX_EVENT_SIZE="$((PRIVATE_MAX_KB * 1024))"
+
+CHAT_MAX_KB="$(echo "$CONFIG" | yq '.chat-relay-max-event-size // "128"')"
+export CHAT_RELAY_MAX_EVENT_SIZE="$((CHAT_MAX_KB * 1024))"
+
+OUTBOX_MAX_KB="$(echo "$CONFIG" | yq '.outbox-relay-max-event-size // "128"')"
+export OUTBOX_RELAY_MAX_EVENT_SIZE="$((OUTBOX_MAX_KB * 1024))"
+
+INBOX_MAX_KB="$(echo "$CONFIG" | yq '.inbox-relay-max-event-size // "128"')"
+export INBOX_RELAY_MAX_EVENT_SIZE="$((INBOX_MAX_KB * 1024))"
+
+# Kind-Specific Limits
+export ENABLE_KIND_SPECIFIC_LIMITS="$(echo "$CONFIG" | yq '.enable-kind-specific-limits // "true"')"
+LONG_FORM_MAX_KB="$(echo "$CONFIG" | yq '.max-long-form-content-size // "1024"')"
+export MAX_LONG_FORM_CONTENT_SIZE="$((LONG_FORM_MAX_KB * 1024))"
+
 export IMPORT_START_DATE="$(echo "$CONFIG" | yq '.import-start-date // ""')"
 export BACKUP_PROVIDER="$(echo "$CONFIG" | yq '.backup-provider // "none"')"
 export BACKUP_INTERVAL_HOURS="$(echo "$CONFIG" | yq '.backup-interval // "24"')"
